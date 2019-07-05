@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#ffffff</color>
+    <color name="colorPrimaryDark">#1E88E5</color>
+    <color name="colorAccent">#00C853</color>
+
+    <color name="colorPrimaryText">#050505</color>
+
+    <color name="toolbar">#00796b</color>
+    <color name="progressBarColor">#ad1457</color>
+
+    <color name="visa_free">#1b5e20</color>
+    <color name="visa_requiered">#b71c1c</color>
+    <color name="visa_on_arrival">#0d47a1</color>
+    <color name="eTa">#ef6c00</color>
+</resources>

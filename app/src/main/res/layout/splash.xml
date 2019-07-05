@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/tools"
+    android:layout_margin="8dp"
+    app:cardBackgroundColor="@color/cardview_light_background"
+    app:cardElevation="6dp"
+    app:ignore="NamespaceTypo,PrivateResource">
+
+    <RelativeLayout
+        android:padding="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_margin="16sp"
+            android:id="@+id/hText"
+            android:layout_alignParentTop="true"
+            android:textAlignment="center"
+            android:textSize="26sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:layout_marginTop="4dp"
+            android:id="@+id/version"
+            android:layout_below="@+id/hText"
+            android:text="@string/version"
+            android:textSize="12sp"
+            android:textColor="@android:color/black"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ProgressBar
+            android:layout_below="@+id/version"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="2dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
+
+
+</androidx.cardview.widget.CardView>
