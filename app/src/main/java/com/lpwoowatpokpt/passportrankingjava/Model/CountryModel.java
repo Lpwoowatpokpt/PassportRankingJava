@@ -1,18 +1,24 @@
 package com.lpwoowatpokpt.passportrankingjava.Model;
 
+import android.util.Log;
+
+import java.util.List;
+
 public class CountryModel {
     private String Name, Image, Cover;
-    private Long Latitude, Longitude;
+    private Double Latitude, Longitude;
+    private Integer visaStatus;
 
     public CountryModel() {
     }
 
-    public CountryModel(String name, String image, String cover, Long latitude, Long longitude) {
+    public CountryModel(String name, String image, String cover, Double latitude, Double longitude, Integer visaStatus) {
         Name = name;
         Image = image;
         Cover = cover;
         Latitude = latitude;
         Longitude = longitude;
+        this.visaStatus = visaStatus;
     }
 
     public String getName() {
@@ -39,19 +45,27 @@ public class CountryModel {
         Cover = cover;
     }
 
-    public Long getLatitude() {
+    public Double getLatitude() {
         return Latitude;
     }
 
-    public void setLatitude(Long latitude) {
+    public void setLatitude(Double latitude) {
         Latitude = latitude;
     }
 
-    public Long getLongitude() {
+    public Double getLongitude() {
         return Longitude;
     }
 
-    public void setLongitude(Long longitude) {
+    public void setLongitude(Double longitude) {
         Longitude = longitude;
+    }
+
+    public Integer getVisaStatus() {
+        return visaStatus;
+    }
+
+    public void setVisaStatus(Integer visaStatus) {
+        this.visaStatus = visaStatus;
     }
 }

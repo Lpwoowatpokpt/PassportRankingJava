@@ -1,16 +1,21 @@
 package com.lpwoowatpokpt.passportrankingjava.UI;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,7 +29,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.lpwoowatpokpt.passportrankingjava.Adapter.PassportAdapter;
 import com.lpwoowatpokpt.passportrankingjava.Common.Common;
+import com.lpwoowatpokpt.passportrankingjava.Model.Country;
 import com.lpwoowatpokpt.passportrankingjava.R;
 
 import java.util.ArrayList;
@@ -38,10 +45,18 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 public class CountryDetail extends AppCompatActivity {
 
     MapView mMapView;
+    ImageView no_internet;
 
     TextView txtTotalScore, txtVisaFree, txtVisaOnArraival, txtEta, txtVisaRequiered;
 
+    RecyclerView recyclerView;
+
+    ProgressBar loadingInfoBar;
+
     FloatingActionButton fab;
+
+    Query query;
+    PassportAdapter passportAdapter;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -52,7 +67,7 @@ public class CountryDetail extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
-                .setDefaultFontPath("fonts/TravelingTypewriter.ttf")
+                .setDefaultFontPath("fonts/Roboto-Medium.ttf")
                 .setFontAttrId(R.attr.fontPath)
                 .build());
         setContentView(R.layout.activity_country_detail);
@@ -64,6 +79,10 @@ public class CountryDetail extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
+        query = Common.getDatabase().getReference(Common.Countries)
+                .orderByKey().equalTo(Common.COUNTRY);
+        query.keepSynced(true);
+
         CollapsingToolbarLayout ctl = findViewById(R.id.collapsing_toolbar);
         ctl.setTitle(Common.COUNTRY);
 
@@ -71,37 +90,47 @@ public class CountryDetail extends AppCompatActivity {
         mMapView.onCreate(savedInstanceState);
         mMapView.onResume();
 
+        no_internet = findViewById(R.id.no_internet);
+
         try {
             MapsInitializer.initialize(getApplicationContext());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        Query _query = Common.getDatabase().getReference(Common.Country_Model)
+        Query mapQuery = Common.getDatabase().getReference(Common.Country_Model)
                 .orderByChild(Common.Name).equalTo(Common.COUNTRY);
+        mapQuery.keepSynced(true);
 
+        if (Common.isConnectedToInternet(getApplicationContext())){
+            mapQuery.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot postSnap: dataSnapshot.getChildren()){
+                        final Double latitude = (Double) postSnap.child("Latitude").getValue();
+                        final Double longitude = (Double) postSnap.child("Longitude").getValue();
 
-        _query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnap: dataSnapshot.getChildren()){
-                    final Double latitude = (Double) postSnap.child("Latitude").getValue();
-                    final Double longitude = (Double) postSnap.child("Longitude").getValue();
-
-                    mMapView.getMapAsync(new OnMapReadyCallback() {
-                        @Override
-                        public void onMapReady(GoogleMap map) {
-                            LatLng current = new LatLng(latitude,longitude);
-                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(current, 5f));
-                        }
-                    });
+                        mMapView.getMapAsync(new OnMapReadyCallback() {
+                            @Override
+                            public void onMapReady(GoogleMap map) {
+                                if(latitude!=null&&longitude!=null){
+                                    LatLng current = new LatLng(latitude,longitude);
+                                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(current, 5f));
+                                }
+                            }
+                        });
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
-        });
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Common.ShowToast(getApplicationContext(), "Error: " + databaseError.getMessage());
+                }
+            });
+        }else {
+            mMapView.setVisibility(View.GONE);
+            no_internet.setVisibility(View.VISIBLE);
+        }
 
 
         txtTotalScore = findViewById(R.id.total);
@@ -109,6 +138,8 @@ public class CountryDetail extends AppCompatActivity {
         txtEta = findViewById(R.id.eTa);
         txtVisaFree = findViewById(R.id.visa_free);
         txtVisaRequiered = findViewById(R.id.visaRequiered);
+
+        loadingInfoBar = findViewById(R.id.loading_recycler);
 
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -119,42 +150,67 @@ public class CountryDetail extends AppCompatActivity {
             }
         });
 
-        calculateCountryScore();
+
+
+        recyclerView = findViewById(R.id.recycler);
+        recyclerView.setHasFixedSize(true);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+        passportAdapter = new PassportAdapter(getApplicationContext(), getCountries());
     }
 
-    private void calculateCountryScore() {
-        Query query = Common.getDatabase().getReference(Common.Countries)
-                .orderByKey().equalTo(Common.COUNTRY);
+
+
+    private ArrayList<Country> getCountries(){
+        final ArrayList<Country>countryList = new ArrayList<>();
+
         query.addValueEventListener(new ValueEventListener() {
+            @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnap: dataSnapshot.getChildren()){
+
                     Map<String,Long> data = (Map)postSnap.getValue();
+                    assert data != null;
                     Map<String, Long> treeMap = new TreeMap<>(data);
 
-                    ArrayList<Long> status = new ArrayList<>();
+                    ArrayList<Long>status = new ArrayList<>();
+
                     for (Map.Entry<String,Long> entry : treeMap.entrySet()){
+                        countryList.addAll(Collections.singleton(new Country(entry.getKey(), entry.getValue())));
+
                         status.add(entry.getValue());
+
                         int visa_free = Collections.frequency(status, (long) 3);
                         int visa_eta = Collections.frequency(status, (long) 2);
                         int visa_onArraival = Collections.frequency(status, (long) 1);
                         int visa_requiered = Collections.frequency(status, (long) 0);
-                        int total = visa_free+visa_onArraival;
+                        int total = visa_free+visa_onArraival+visa_eta;
+
                         txtTotalScore.setText(String.valueOf(total));
                         txtVisaFree.setText(String.valueOf(visa_free));
                         txtEta.setText(String.valueOf(visa_eta));
                         txtVisaOnArraival.setText(String.valueOf(visa_onArraival));
                         txtVisaRequiered.setText(String.valueOf(visa_requiered));
+
+                        recyclerView.setAdapter(passportAdapter);
+                        passportAdapter.notifyDataSetChanged();
+                        loadingInfoBar.setVisibility(View.GONE);
                     }
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
         });
+        return countryList;
+
     }
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {

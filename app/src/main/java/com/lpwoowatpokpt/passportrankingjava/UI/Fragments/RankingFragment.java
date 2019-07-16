@@ -1,5 +1,6 @@
 package com.lpwoowatpokpt.passportrankingjava.UI.Fragments;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -26,12 +27,14 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.bumptech.glide.Glide;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.lpwoowatpokpt.passportrankingjava.Adapter.PassportAdapter;
 import com.lpwoowatpokpt.passportrankingjava.Common.Common;
 import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
 import com.lpwoowatpokpt.passportrankingjava.Model.Country;
+import com.lpwoowatpokpt.passportrankingjava.Model.Ranking;
 import com.lpwoowatpokpt.passportrankingjava.R;
 
 import java.util.ArrayList;
@@ -48,6 +51,7 @@ import in.galaxyofandroid.spinerdialog.SpinnerDialog;
 public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     private Context context;
+    private DatabaseReference topRanking, countries;
 
     public static RankingFragment newInstance(Context context)
     {
@@ -62,7 +66,7 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
     private SpinnerDialog spinnerDialog;
 
-    private TextView name, txtTotalScore, txtVisaFree, txtVisaOnArraival, txtEta, txtVisaRequiered;
+    private TextView name, txtTotalScore, txtVisaFree, tatVisaOnArrival, txtEta, tatVisaRequired;
     private ImageView cover;
 
     private ImageView expandBtn;
@@ -71,28 +75,41 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
     private RankingFragment(Context context) {
         this.context = context;
         tinyDB = new TinyDB(context);
+        countries = Common.getDatabase().getReference(Common.Countries);
+        countries.keepSynced(true);
+        topRanking = Common.getDatabase().getReference(Common.Top);
+        topRanking.keepSynced(true);
         setHasOptionsMenu(true);
     }
 
     public RankingFragment() {
     }
 
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View myFragment = inflater.inflate(R.layout.fragment_ranking, container, false);
 
         name = myFragment.findViewById(R.id.name);
         cover = myFragment.findViewById(R.id.passportCover);
+        cover.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                scaleCoverImage(tinyDB.getString(Common.COVER));
+            }
+        });
+
         txtTotalScore = myFragment.findViewById(R.id.total);
-        txtVisaOnArraival = myFragment.findViewById(R.id.visa_on_arrival);
+        tatVisaOnArrival = myFragment.findViewById(R.id.visa_on_arrival);
         txtEta = myFragment.findViewById(R.id.eTa);
         txtVisaFree = myFragment.findViewById(R.id.visa_free);
-        txtVisaRequiered = myFragment.findViewById(R.id.visaRequiered);
+        tatVisaRequired = myFragment.findViewById(R.id.visaRequiered);
 
         name.setText(tinyDB.getString(Common.COUNTRY_NAME));
-        Glide.with(context).load(tinyDB.getString(Common.COVER))
+
+
+        Glide.with(context)
+                .load(tinyDB.getString(Common.COVER))
                 .into(cover);
 
         expandBtn = myFragment.findViewById(R.id.expand);
@@ -126,7 +143,12 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
         header.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (Common.isConnectedToInternet(context))
                 showDialog();
+                else {
+                   Common.ShowToast(context, getString(R.string.no_internet));
+                }
+
             }
         });
 
@@ -142,6 +164,23 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
         loadRecyclerViewData();
         return myFragment;
+    }
+
+    private void scaleCoverImage(String coverPath) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+
+        alertDialog.setCancelable(true);
+
+        LayoutInflater inflater = this.getLayoutInflater();
+        @SuppressLint("InflateParams") View scale_dialogue = inflater.inflate(R.layout.passport_item, null);
+
+        ImageView coverScaled = scale_dialogue.findViewById(R.id.coverScale);
+        Glide.with(context).load(coverPath).into(coverScaled);
+
+        final AlertDialog alert = alertDialog.create();
+        alert.setView(scale_dialogue);
+
+        alert.show();
     }
 
     @Override
@@ -216,9 +255,9 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
     private ArrayList<Country> getCountries(){
         final ArrayList<Country>countryList = new ArrayList<>();
 
-        Query query = Common.getDatabase().getReference(Common.Countries)
-                .orderByKey().equalTo(tinyDB.getString(Common.COUNTRY_NAME));
+        Query query = countries.orderByKey().equalTo(tinyDB.getString(Common.COUNTRY_NAME));
         query.addValueEventListener(new ValueEventListener() {
+            @SuppressLint("NewApi")
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnap: dataSnapshot.getChildren()){
@@ -232,30 +271,46 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
                     for (Map.Entry<String,Long> entry : treeMap.entrySet()){
                         countryList.addAll(Collections.singleton(new Country(entry.getKey(), entry.getValue())));
 
-                        status.add(entry.getValue());
+                        for(int i = 0; countryList.size() > i;i++){
+                            Common.countryModel.get(i).setVisaStatus(Math.toIntExact(countryList.get(i).getValue()));
+                        }
 
-                        tinyDB.putListLong(Common.STATUS,status);
+                        status.add(entry.getValue());
 
                         int visa_free = Collections.frequency(status, (long) 3);
                         int visa_eta = Collections.frequency(status, (long) 2);
                         int visa_onArraival = Collections.frequency(status, (long) 1);
                         int visa_requiered = Collections.frequency(status, (long) 0);
-                        int total = visa_free+visa_onArraival;
+                        int total = visa_free+visa_onArraival+visa_eta;
+
                         txtTotalScore.setText(String.valueOf(total));
                         txtVisaFree.setText(String.valueOf(visa_free));
                         txtEta.setText(String.valueOf(visa_eta));
-                        txtVisaOnArraival.setText(String.valueOf(visa_onArraival));
-                        txtVisaRequiered.setText(String.valueOf(visa_requiered));
+                        tatVisaOnArrival.setText(String.valueOf(visa_onArraival));
+                        tatVisaRequired.setText(String.valueOf(visa_requiered));
 
+                       updateTop(tinyDB.getString(Common.COUNTRY_NAME), tinyDB.getString(Common.COVER), total,visa_free,visa_onArraival,visa_requiered,visa_eta);
+
+                        recyclerView.setAdapter(passportAdapter);
+                        swipeRefreshLayout.setRefreshing(false);
+                        passportAdapter.notifyDataSetChanged();
                     }
                 }
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Common.ShowToast(context, "Error: " + databaseError);
             }
         });
         return countryList;
+    }
+
+
+
+
+    private void updateTop(String countryName, String coverPath, int total, int visa_free, int visa_onArrival, int visa_requiered, int visa_eta) {
+        topRanking.child(countryName)
+                .setValue(new Ranking(countryName,coverPath,total,visa_free,visa_onArrival,visa_eta,visa_requiered));
     }
 
 
@@ -267,8 +322,5 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
     private void loadRecyclerViewData() {
         swipeRefreshLayout.setRefreshing(true);
         passportAdapter = new PassportAdapter(context, getCountries());
-        recyclerView.setAdapter(passportAdapter);
-        swipeRefreshLayout.setRefreshing(false);
-        passportAdapter.notifyDataSetChanged();
     }
 }

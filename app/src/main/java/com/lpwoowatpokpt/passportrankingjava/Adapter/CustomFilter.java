@@ -13,7 +13,7 @@ public class CustomFilter extends Filter {
     private PassportAdapter passportAdapter;
     private AbstractList<Country> filteredList;
 
-    public CustomFilter(PassportAdapter passportAdapter, AbstractList<Country> filteredList) {
+     CustomFilter(PassportAdapter passportAdapter, AbstractList<Country> filteredList) {
         this.passportAdapter = passportAdapter;
         this.filteredList = filteredList;
     }

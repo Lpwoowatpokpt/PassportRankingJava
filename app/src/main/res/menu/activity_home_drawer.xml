@@ -6,15 +6,19 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_ranking"
-            android:icon="@drawable/visa"
+            android:icon="@drawable/passport"
             android:title="@string/menu_ranking" />
         <item
+            android:id="@+id/nav_top"
+            android:icon="@drawable/rank"
+            android:title="@string/menu_top" />
+        <item
             android:id="@+id/nav_map"
-            android:icon="@drawable/map"
+            android:icon="@drawable/google"
             android:title="@string/menu_map" />
         <item
             android:id="@+id/nav_info"
-            android:icon="@drawable/ecologism"
+            android:icon="@drawable/info"
             android:title="@string/menu_info" />
     </group>
 

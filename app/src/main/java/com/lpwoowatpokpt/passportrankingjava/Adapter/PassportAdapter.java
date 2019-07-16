@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,22 +16,18 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.lpwoowatpokpt.passportrankingjava.Common.Common;
-import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
 import com.lpwoowatpokpt.passportrankingjava.Model.Country;
 import com.lpwoowatpokpt.passportrankingjava.R;
 import com.lpwoowatpokpt.passportrankingjava.UI.CountryDetail;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class PassportAdapter extends RecyclerView.Adapter<PassportAdapter.ViewHolder>
 implements Filterable {

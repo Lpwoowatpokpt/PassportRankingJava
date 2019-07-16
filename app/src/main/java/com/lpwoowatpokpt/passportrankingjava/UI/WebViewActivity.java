@@ -23,16 +23,14 @@ import com.lpwoowatpokpt.passportrankingjava.R;
 
 public class WebViewActivity extends AppCompatActivity implements CustomWebChromeClient.ProgressListener{
 
-    private WebView mWebView;
     private ProgressBar mProgressBar;
-    private Toolbar mToolbar;
     private String path;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_view);
-        mToolbar = findViewById(R.id.toolbar_webview);
+        Toolbar mToolbar = findViewById(R.id.toolbar_webview);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle(Common.COUNTRY);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -45,7 +43,7 @@ public class WebViewActivity extends AppCompatActivity implements CustomWebChrom
 
         path = Common.WIKIPEDIA+country;
 
-        mWebView = this.findViewById(R.id.webView);
+        WebView mWebView = this.findViewById(R.id.webView);
         mProgressBar = findViewById(R.id.progressBar);
 
         mProgressBar.setMax(100);

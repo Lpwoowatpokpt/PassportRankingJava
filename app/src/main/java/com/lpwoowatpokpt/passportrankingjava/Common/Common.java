@@ -1,11 +1,15 @@
 package com.lpwoowatpokpt.passportrankingjava.Common;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.FirebaseDatabase;
-import com.lpwoowatpokpt.passportrankingjava.Model.Country;
 import com.lpwoowatpokpt.passportrankingjava.Model.CountryModel;
 
 import java.util.ArrayList;
@@ -24,18 +28,16 @@ public class Common {
     //firebase
     public static final String Country_Model ="CountryModel";
     public static final String Countries = "Countries";
+    public static final String Top = "TopCountries";
     public static final String Name = "Name";
-
 
     //tiny db
     public static final String IS_EXPAND = "is_expand";
-    public static final String STATUS = "status";
     public static final String COUNTRY_LIST = "country_list";
     public static final String COUNTRY_NAME = "country";
     public static final String COVER = "cover";
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
-
 
     private static FirebaseDatabase mDatabase;
     public static FirebaseDatabase getDatabase() {
@@ -58,5 +60,13 @@ public class Common {
         }
         return false;
     }
+
+    public static void ShowToast(Context context, String message){
+        Toast toast = Toast.makeText(context,
+                message, Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+
 
 }

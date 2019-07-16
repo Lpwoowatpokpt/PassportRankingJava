@@ -1,12 +1,13 @@
 package com.lpwoowatpokpt.passportrankingjava.UI;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.bumptech.glide.Glide;
@@ -56,12 +58,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
-                .setDefaultFontPath("fonts/TravelingTypewriter.ttf")
+                .setDefaultFontPath("fonts/expressway.ttf")
                 .setFontAttrId(R.attr.fontPath)
                 .build());
         setContentView(R.layout.activity_main);
 
         tinyDB = new TinyDB(this);
+
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, Common.RequestCameraPermissionId);
+        }
 
         background = findViewById(R.id.background);
         btnAdd = findViewById(R.id.addBtn);
@@ -99,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
             snackbar.show();
         }
     }
+
 
     private void getDataFromFirebase() {
         DatabaseReference country_model = Common.getDatabase().getReference(Common.Country_Model);
@@ -147,12 +157,15 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
+                Common.ShowToast(getApplicationContext(), "Error: " + databaseError);
             }
         });
     }
 
     private void startSplashScreen() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+
+        alertDialog.setCancelable(false);
 
         LayoutInflater inflater = this.getLayoutInflater();
         @SuppressLint("InflateParams") View update_dialog = inflater.inflate(R.layout.splash, null);
@@ -178,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-        handler.postDelayed(runnable, 3000);
+        handler.postDelayed(runnable, 2500);
     }
-
 }
