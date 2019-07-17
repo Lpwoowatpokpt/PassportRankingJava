@@ -1,6 +1,5 @@
 package com.lpwoowatpokpt.passportrankingjava.UI.Fragments;
 
-
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -67,6 +66,7 @@ public class TopFragment extends Fragment {
 
         loadingInfoBar = myFragment.findViewById(R.id.loading_recycler);
 
+        if (Common.isConnectedToInternet(context))
         populateTopList();
 
         return myFragment;
@@ -94,18 +94,15 @@ public class TopFragment extends Fragment {
                 rankingViewHolder.eTaTxt.setText(String.valueOf(ranking.geteTa()));
 
 
-                rankingViewHolder.cardView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (rankingViewHolder.expandBtn.getVisibility()==View.VISIBLE){
-                            rankingViewHolder.expandBtn.setVisibility(View.GONE);
-                            rankingViewHolder.collapseBtn.setVisibility(View.VISIBLE);
-                            rankingViewHolder.layout.setVisibility(View.VISIBLE);
-                        }else {
-                            rankingViewHolder.expandBtn.setVisibility(View.VISIBLE);
-                            rankingViewHolder.collapseBtn.setVisibility(View.GONE);
-                            rankingViewHolder.layout.setVisibility(View.GONE);
-                        }
+                rankingViewHolder.cardView.setOnClickListener(view -> {
+                    if (rankingViewHolder.expandBtn.getVisibility()==View.VISIBLE){
+                        rankingViewHolder.expandBtn.setVisibility(View.GONE);
+                        rankingViewHolder.collapseBtn.setVisibility(View.VISIBLE);
+                        rankingViewHolder.layout.setVisibility(View.VISIBLE);
+                    }else {
+                        rankingViewHolder.expandBtn.setVisibility(View.VISIBLE);
+                        rankingViewHolder.collapseBtn.setVisibility(View.GONE);
+                        rankingViewHolder.layout.setVisibility(View.GONE);
                     }
                 });
 

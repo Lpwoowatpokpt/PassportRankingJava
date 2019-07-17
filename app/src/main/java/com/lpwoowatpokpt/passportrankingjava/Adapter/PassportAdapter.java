@@ -90,32 +90,40 @@ implements Filterable {
         }
 
 
-        DatabaseReference country_model = Common.getDatabase().getReference(Common.Country_Model);
+        if(Common.isConnectedToInternet(context)){
 
-        country_model.orderByChild(Common.Name).equalTo(mCountryList.get(pos).getKey())
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for (DataSnapshot postSnap: dataSnapshot.getChildren()){
-                           String flag = (String) postSnap.child("Image").getValue();
+            if (mCountryList==mFilteredList){
+                Glide.with(context)
+                        .load(Common.countryModel.get(pos).getImage())
+                        .into(viewHolder.countryFlag);
+            }else {
+                DatabaseReference country_model = Common.getDatabase().getReference(Common.Country_Model);
+                country_model.keepSynced(true);
+                country_model.orderByChild(Common.Name).equalTo(mCountryList.get(pos).getKey())
+                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                for (DataSnapshot postSnap: dataSnapshot.getChildren()){
+                                    String flag = (String) postSnap.child(Common.Flag).getValue();
 
-                           Glide.with(context)
-                                   .load(flag)
-                                   .into(viewHolder.countryFlag);
-                        }
-                    }
+                                    Glide.with(context)
+                                            .load(flag)
+                                            .into(viewHolder.countryFlag);
+                                }
+                            }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                    }
-                });
-
-        viewHolder.card.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Common.COUNTRY = mCountryList.get(pos).getKey();
-                v.getContext().startActivity(new Intent(context.getApplicationContext(), CountryDetail.class));
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Common.ShowToast(context, "Error :" + databaseError.getMessage());
+                            }
+                        });
             }
+        }
+
+
+        viewHolder.card.setOnClickListener(v -> {
+            Common.COUNTRY = mCountryList.get(pos).getKey();
+            v.getContext().startActivity(new Intent(context.getApplicationContext(), CountryDetail.class));
         });
     }
 

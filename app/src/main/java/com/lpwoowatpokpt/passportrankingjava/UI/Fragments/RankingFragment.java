@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -51,14 +52,24 @@ import in.galaxyofandroid.spinerdialog.SpinnerDialog;
 public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     private Context context;
+    private TinyDB tinyDB;
     private DatabaseReference topRanking, countries;
+
+    private RankingFragment(Context context) {
+        this.context = context;
+        tinyDB = new TinyDB(context);
+        countries = Common.getDatabase().getReference(Common.Countries);
+        countries.keepSynced(true);
+        topRanking = Common.getDatabase().getReference(Common.Top);
+        topRanking.keepSynced(true);
+        setHasOptionsMenu(true);
+    }
 
     public static RankingFragment newInstance(Context context)
     {
         return new RankingFragment(context);
     }
 
-    private TinyDB tinyDB;
 
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
@@ -72,15 +83,7 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
     private ImageView expandBtn;
     private LinearLayout ranking;
 
-    private RankingFragment(Context context) {
-        this.context = context;
-        tinyDB = new TinyDB(context);
-        countries = Common.getDatabase().getReference(Common.Countries);
-        countries.keepSynced(true);
-        topRanking = Common.getDatabase().getReference(Common.Top);
-        topRanking.keepSynced(true);
-        setHasOptionsMenu(true);
-    }
+
 
     public RankingFragment() {
     }
@@ -92,12 +95,7 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
         name = myFragment.findViewById(R.id.name);
         cover = myFragment.findViewById(R.id.passportCover);
-        cover.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                scaleCoverImage(tinyDB.getString(Common.COVER));
-            }
-        });
+        cover.setOnClickListener(view -> scaleCoverImage(tinyDB.getString(Common.COVER)));
 
         txtTotalScore = myFragment.findViewById(R.id.total);
         tatVisaOnArrival = myFragment.findViewById(R.id.visa_on_arrival);
@@ -106,7 +104,6 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
         tatVisaRequired = myFragment.findViewById(R.id.visaRequiered);
 
         name.setText(tinyDB.getString(Common.COUNTRY_NAME));
-
 
         Glide.with(context)
                 .load(tinyDB.getString(Common.COVER))
@@ -123,32 +120,25 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
             expandBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_arrow_drop_down_black_24dp));
         }
 
-        expandBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (tinyDB.getBoolean(Common.IS_EXPAND,true)){
-                    ranking.setVisibility(View.GONE);
-                    expandBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_arrow_drop_down_black_24dp));
-                    tinyDB.putBoolean(Common.IS_EXPAND, false);
-                }else {
-                    ranking.setVisibility(View.VISIBLE);
-                    expandBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_arrow_drop_up_black_24dp));
-                    tinyDB.putBoolean(Common.IS_EXPAND, true);
-                }
-
+        expandBtn.setOnClickListener(v -> {
+            if (tinyDB.getBoolean(Common.IS_EXPAND,true)){
+                ranking.setVisibility(View.GONE);
+                expandBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_arrow_drop_down_black_24dp));
+                tinyDB.putBoolean(Common.IS_EXPAND, false);
+            }else {
+                ranking.setVisibility(View.VISIBLE);
+                expandBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_arrow_drop_up_black_24dp));
+                tinyDB.putBoolean(Common.IS_EXPAND, true);
             }
+
         });
 
         CardView header = myFragment.findViewById(R.id.header);
-        header.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (Common.isConnectedToInternet(context))
-                showDialog();
-                else {
-                   Common.ShowToast(context, getString(R.string.no_internet));
-                }
-
+        header.setOnClickListener(v -> {
+            if (Common.isConnectedToInternet(context))
+            showDialog();
+            else {
+               Common.ShowToast(context, getString(R.string.no_internet));
             }
         });
 
@@ -209,46 +199,35 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
         View update_dialog = inflater.inflate(R.layout.change_region_dialog, null);
 
         alertDialog.setView(update_dialog);
-        alertDialog.setNegativeButton("NO", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        });
+        alertDialog.setNegativeButton("NO", (dialogInterface, i) -> dialogInterface.dismiss());
 
-        alertDialog.setPositiveButton("YES", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-                showSpinner();
-                spinnerDialog.showSpinerDialog();
-            }
+        alertDialog.setPositiveButton("YES", (dialogInterface, i) -> {
+            dialogInterface.dismiss();
+            showSpinner();
+            spinnerDialog.showSpinerDialog();
         });
         alertDialog.show();
     }
 
     private void showSpinner() {
         spinnerDialog = new SpinnerDialog(getActivity(), tinyDB.getListString(Common.COUNTRY_LIST), getString(R.string.select_your_country));
-        spinnerDialog.bindOnSpinerListener(new OnSpinerItemClick() {
-            @Override
-            public void onClick(String s, int pos) {
+        spinnerDialog.bindOnSpinerListener((s, pos) -> {
 
-                String countryName = Common.countryModel.get(pos).getName();
+            String countryName = Common.countryModel.get(pos).getName();
 
-                name.setText(countryName);
+            name.setText(countryName);
 
-                Glide.with(context)
-                        .load(Common.countryModel.get(pos).getCover())
-                        .into(cover);
+            Glide.with(context)
+                    .load(Common.countryModel.get(pos).getCover())
+                    .into(cover);
 
-                tinyDB.putString(Common.COUNTRY_NAME, countryName);
-                tinyDB.putString(Common.COVER, Common.countryModel.get(pos).getCover());
+            tinyDB.putString(Common.COUNTRY_NAME, countryName);
+            tinyDB.putString(Common.COVER, Common.countryModel.get(pos).getCover());
 
-                tinyDB.putDouble(Common.LATITUDE, Common.countryModel.get(pos).getLatitude());
-                tinyDB.putDouble(Common.LONGITUDE, Common.countryModel.get(pos).getLongitude());
+            tinyDB.putDouble(Common.LATITUDE, Common.countryModel.get(pos).getLatitude());
+            tinyDB.putDouble(Common.LONGITUDE, Common.countryModel.get(pos).getLongitude());
 
-                onRefresh();
-            }
+            onRefresh();
         });
     }
 
@@ -256,6 +235,7 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
         final ArrayList<Country>countryList = new ArrayList<>();
 
         Query query = countries.orderByKey().equalTo(tinyDB.getString(Common.COUNTRY_NAME));
+        query.keepSynced(true);
         query.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
             @Override
@@ -271,11 +251,8 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
                     for (Map.Entry<String,Long> entry : treeMap.entrySet()){
                         countryList.addAll(Collections.singleton(new Country(entry.getKey(), entry.getValue())));
 
-                        for(int i = 0; countryList.size() > i;i++){
-                            Common.countryModel.get(i).setVisaStatus(Math.toIntExact(countryList.get(i).getValue()));
-                        }
-
                         status.add(entry.getValue());
+                        tinyDB.putListLong(Common.STATUS,status);
 
                         int visa_free = Collections.frequency(status, (long) 3);
                         int visa_eta = Collections.frequency(status, (long) 2);
@@ -288,6 +265,8 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
                         txtEta.setText(String.valueOf(visa_eta));
                         tatVisaOnArrival.setText(String.valueOf(visa_onArraival));
                         tatVisaRequired.setText(String.valueOf(visa_requiered));
+
+
 
                        updateTop(tinyDB.getString(Common.COUNTRY_NAME), tinyDB.getString(Common.COVER), total,visa_free,visa_onArraival,visa_requiered,visa_eta);
 

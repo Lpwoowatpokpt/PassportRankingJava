@@ -7,18 +7,16 @@ import java.util.List;
 public class CountryModel {
     private String Name, Image, Cover;
     private Double Latitude, Longitude;
-    private Integer visaStatus;
 
     public CountryModel() {
     }
 
-    public CountryModel(String name, String image, String cover, Double latitude, Double longitude, Integer visaStatus) {
+    public CountryModel(String name, String image, String cover, Double latitude, Double longitude) {
         Name = name;
         Image = image;
         Cover = cover;
         Latitude = latitude;
         Longitude = longitude;
-        this.visaStatus = visaStatus;
     }
 
     public String getName() {
@@ -59,13 +57,5 @@ public class CountryModel {
 
     public void setLongitude(Double longitude) {
         Longitude = longitude;
-    }
-
-    public Integer getVisaStatus() {
-        return visaStatus;
-    }
-
-    public void setVisaStatus(Integer visaStatus) {
-        this.visaStatus = visaStatus;
     }
 }

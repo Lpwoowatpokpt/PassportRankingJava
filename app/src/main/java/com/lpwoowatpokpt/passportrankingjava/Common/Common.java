@@ -12,6 +12,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.FirebaseDatabase;
 import com.lpwoowatpokpt.passportrankingjava.Model.CountryModel;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,14 +31,36 @@ public class Common {
     public static final String Countries = "Countries";
     public static final String Top = "TopCountries";
     public static final String Name = "Name";
+    public static final String Flag = "Image";
 
     //tiny db
+    public static final String STATUS = "status";
     public static final String IS_EXPAND = "is_expand";
     public static final String COUNTRY_LIST = "country_list";
     public static final String COUNTRY_NAME = "country";
     public static final String COVER = "cover";
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
+    public static final String IS_DARK_MODE = "is_dark_mode";
+    public static final String THEME_ID = "theme_id";
+
+    //big fat
+    public static List<String>bigCountries(){
+        List<String>big = new ArrayList<>();
+        big.add("Russian Federation");
+        big.add("China");
+        big.add("United States");
+        big.add("Brazil");
+        big.add("India");
+        big.add("Australia");
+        big.add("Canada");
+        big.add("Argentina");
+        big.add("Chile");
+        big.add("Peru");
+        big.add("Kazakhstan");
+        return big;
+    }
+
 
     private static FirebaseDatabase mDatabase;
     public static FirebaseDatabase getDatabase() {

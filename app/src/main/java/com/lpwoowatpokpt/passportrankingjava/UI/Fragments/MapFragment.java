@@ -104,11 +104,11 @@ public class MapFragment extends Fragment {
                 LatLng current = new LatLng(lat,longitude);
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(current,6f));
 
-                for (int i = 0; Common.countryModel.size() > i; i++){
+                for (int i=0; i < Common.countryModel.size(); i++){
                     createMarker(Common.countryModel.get(i).getLatitude(),
                             Common.countryModel.get(i).getLongitude(),
                             Common.countryModel.get(i).getName(),
-                            Common.countryModel.get(i).getVisaStatus());
+                            tinyDB.getListLong(Common.STATUS).get(i));
                 }
 
             }
@@ -116,7 +116,7 @@ public class MapFragment extends Fragment {
         return myFragment;
     }
 
-    private void createMarker(Double latitude, Double longitude, String name, Integer status){
+    private void createMarker(Double latitude, Double longitude, String name, Long status){
         String _status = "";
         BitmapDescriptor icon;
 

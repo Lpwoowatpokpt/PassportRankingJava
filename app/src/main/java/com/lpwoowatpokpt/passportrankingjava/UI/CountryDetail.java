@@ -18,10 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -31,6 +29,8 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.lpwoowatpokpt.passportrankingjava.Adapter.PassportAdapter;
 import com.lpwoowatpokpt.passportrankingjava.Common.Common;
+import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
+import com.lpwoowatpokpt.passportrankingjava.Common.Utils;
 import com.lpwoowatpokpt.passportrankingjava.Model.Country;
 import com.lpwoowatpokpt.passportrankingjava.R;
 
@@ -43,6 +43,8 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class CountryDetail extends AppCompatActivity {
+
+    TinyDB tinyDB;
 
     MapView mMapView;
     ImageView no_internet;
@@ -66,11 +68,17 @@ public class CountryDetail extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        tinyDB = new TinyDB(this);
+
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath("fonts/Roboto-Medium.ttf")
                 .setFontAttrId(R.attr.fontPath)
                 .build());
+
+        Utils.onActivityCreateSetTheme(this, tinyDB.getInt(Common.THEME_ID));
         setContentView(R.layout.activity_country_detail);
+
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -110,13 +118,14 @@ public class CountryDetail extends AppCompatActivity {
                         final Double latitude = (Double) postSnap.child("Latitude").getValue();
                         final Double longitude = (Double) postSnap.child("Longitude").getValue();
 
-                        mMapView.getMapAsync(new OnMapReadyCallback() {
-                            @Override
-                            public void onMapReady(GoogleMap map) {
-                                if(latitude!=null&&longitude!=null){
-                                    LatLng current = new LatLng(latitude,longitude);
-                                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(current, 5f));
-                                }
+
+                        mMapView.getMapAsync(map -> {
+                            if(latitude!=null&&longitude!=null){
+                                LatLng current = new LatLng(latitude,longitude);
+                                float scale = 5f;
+                                if (Common.bigCountries().contains(Common.COUNTRY))
+                                    scale = 2f;
+                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(current, scale));
                             }
                         });
                     }
@@ -142,12 +151,9 @@ public class CountryDetail extends AppCompatActivity {
         loadingInfoBar = findViewById(R.id.loading_recycler);
 
         fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent browserIntent = new Intent(CountryDetail.this, WebViewActivity.class);
-                startActivity(browserIntent);
-            }
+        fab.setOnClickListener(v -> {
+            Intent browserIntent = new Intent(CountryDetail.this, WebViewActivity.class);
+            startActivity(browserIntent);
         });
 
 
@@ -160,6 +166,8 @@ public class CountryDetail extends AppCompatActivity {
 
         passportAdapter = new PassportAdapter(getApplicationContext(), getCountries());
     }
+
+
 
 
 
