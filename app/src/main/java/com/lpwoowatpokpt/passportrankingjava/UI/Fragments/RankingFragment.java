@@ -3,8 +3,6 @@ package com.lpwoowatpokpt.passportrankingjava.UI.Fragments;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,18 +35,16 @@ import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
 import com.lpwoowatpokpt.passportrankingjava.Model.Country;
 import com.lpwoowatpokpt.passportrankingjava.Model.Ranking;
 import com.lpwoowatpokpt.passportrankingjava.R;
+import com.lpwoowatpokpt.passportrankingjava.UI.MainActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
-import in.galaxyofandroid.spinerdialog.OnSpinerItemClick;
 import in.galaxyofandroid.spinerdialog.SpinnerDialog;
 
-/**
- * A simple {@link Fragment} subclass.
- */
+
 public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     private Context context;
@@ -69,7 +65,6 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
     {
         return new RankingFragment(context);
     }
-
 
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
@@ -136,9 +131,9 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
         CardView header = myFragment.findViewById(R.id.header);
         header.setOnClickListener(v -> {
             if (Common.isConnectedToInternet(context))
-            showDialog();
+                showDialog();
             else {
-               Common.ShowToast(context, getString(R.string.no_internet));
+                Common.ShowToast(context, getString(R.string.no_internet));
             }
         });
 
@@ -210,7 +205,15 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
     }
 
     private void showSpinner() {
-        spinnerDialog = new SpinnerDialog(getActivity(), tinyDB.getListString(Common.COUNTRY_LIST), getString(R.string.select_your_country));
+        spinnerDialog=new SpinnerDialog(getActivity(), tinyDB.getListString(Common.COUNTRY_LIST), getString(R.string.select_your_country), R.style.DialogAnimations_SmileWindow,"Close");
+
+        spinnerDialog.setCancellable(true);
+        spinnerDialog.setShowKeyboard(false);
+
+        spinnerDialog.setTitleColor(getResources().getColor(R.color.colorAccent));
+        spinnerDialog.setTitleColor(getResources().getColor(R.color.colorPrimaryText));
+        spinnerDialog.setCloseColor(getResources().getColor(R.color.visa_requiered));
+
         spinnerDialog.bindOnSpinerListener((s, pos) -> {
 
             String countryName = Common.countryModel.get(pos).getName();
@@ -268,7 +271,7 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
 
 
-                       updateTop(tinyDB.getString(Common.COUNTRY_NAME), tinyDB.getString(Common.COVER), total,visa_free,visa_onArraival,visa_requiered,visa_eta);
+                        updateTop(tinyDB.getString(Common.COUNTRY_NAME), tinyDB.getString(Common.COVER), total,visa_free,visa_onArraival,visa_requiered,visa_eta);
 
                         recyclerView.setAdapter(passportAdapter);
                         swipeRefreshLayout.setRefreshing(false);

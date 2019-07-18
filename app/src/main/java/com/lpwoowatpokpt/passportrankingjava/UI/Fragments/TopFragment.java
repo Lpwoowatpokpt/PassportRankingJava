@@ -30,22 +30,21 @@ public class TopFragment extends Fragment {
 
     private DatabaseReference ranking;
     private Context context;
-    private ProgressBar loadingInfoBar;
+
+    private TopFragment(Context context) {
+        this.context = context;
+        ranking = Common.getDatabase().getReference(Common.Top);
+    }
 
     public static TopFragment newInstance(Context context)
     {
         return new TopFragment(context);
     }
 
-   private RecyclerView recyclerView;
+
+    private RecyclerView recyclerView;
     private FirebaseRecyclerAdapter<Ranking, RankingViewHolder>adapter;
-
-    private TopFragment(Context context) {
-        this.context = context;
-        ranking = Common.getDatabase().getReference(Common.Top);
-        ranking.keepSynced(true);
-    }
-
+    private ProgressBar loadingInfoBar;
 
     public TopFragment() {
     }
@@ -54,7 +53,7 @@ public class TopFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         View myFragment = inflater.inflate(R.layout.fragment_top, container, false);
         recyclerView = myFragment.findViewById(R.id.recycler);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
@@ -80,7 +79,7 @@ public class TopFragment extends Fragment {
         adapter = new FirebaseRecyclerAdapter<Ranking, RankingViewHolder>(options) {
             @Override
             protected void onBindViewHolder(@NonNull final RankingViewHolder rankingViewHolder, final int position, @NonNull Ranking ranking) {
-                rankingViewHolder.countryPositionTxt.setText(String.valueOf(-position + 199));
+                rankingViewHolder.countryPositionTxt.setText(String.valueOf(ranking.getTotalScore()));
                 rankingViewHolder.countryNameTxt.setText(ranking.getName());
                 Glide.with(context).load(ranking.getCover()).into(rankingViewHolder.coverImg);
 

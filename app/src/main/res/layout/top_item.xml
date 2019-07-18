@@ -30,7 +30,7 @@
                 android:textAlignment="center"
                 android:layout_gravity="center"
                 android:layout_width="0dp"
-                android:layout_weight="1"
+                android:layout_weight="1.5"
                 android:layout_height="wrap_content" />
 
             <ImageView
@@ -42,14 +42,13 @@
                 android:contentDescription="@string/app_name" />
 
             <TextView
-                android:textColor="@color/browser_actions_text_color"
                 android:textStyle="bold"
                 android:id="@+id/countryNameTxt"
                 android:textSize="20sp"
                 android:textAlignment="center"
                 android:layout_gravity="center"
                 android:layout_width="0dp"
-                android:layout_weight="7"
+                android:layout_weight="6.5"
                 android:layout_height="wrap_content" />
 
         </LinearLayout>

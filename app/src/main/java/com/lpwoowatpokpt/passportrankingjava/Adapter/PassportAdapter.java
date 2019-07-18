@@ -98,7 +98,6 @@ implements Filterable {
                         .into(viewHolder.countryFlag);
             }else {
                 DatabaseReference country_model = Common.getDatabase().getReference(Common.Country_Model);
-                country_model.keepSynced(true);
                 country_model.orderByChild(Common.Name).equalTo(mCountryList.get(pos).getKey())
                         .addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override

@@ -39,8 +39,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
-import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
+import io.github.inflationx.calligraphy3.CalligraphyConfig;
+import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
+import io.github.inflationx.viewpump.ViewPump;
+import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 
 public class CountryDetail extends AppCompatActivity {
 
@@ -62,23 +64,22 @@ public class CountryDetail extends AppCompatActivity {
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+        super.attachBaseContext(ViewPumpContextWrapper.wrap(newBase));
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ViewPump.init(ViewPump.builder()
+                .addInterceptor(new CalligraphyInterceptor(
+                        new CalligraphyConfig.Builder()
+                                .setDefaultFontPath("fonts/Roboto-Medium.ttf")
+                                .setFontAttrId(R.attr.fontPath)
+                                .build())).build());
 
         tinyDB = new TinyDB(this);
-
-        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
-                .setDefaultFontPath("fonts/Roboto-Medium.ttf")
-                .setFontAttrId(R.attr.fontPath)
-                .build());
-
         Utils.onActivityCreateSetTheme(this, tinyDB.getInt(Common.THEME_ID));
         setContentView(R.layout.activity_country_detail);
-
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -89,8 +90,6 @@ public class CountryDetail extends AppCompatActivity {
 
         query = Common.getDatabase().getReference(Common.Countries)
                 .orderByKey().equalTo(Common.COUNTRY);
-        query.keepSynced(true);
-
         CollapsingToolbarLayout ctl = findViewById(R.id.collapsing_toolbar);
         ctl.setTitle(Common.COUNTRY);
 
@@ -118,13 +117,12 @@ public class CountryDetail extends AppCompatActivity {
                         final Double latitude = (Double) postSnap.child("Latitude").getValue();
                         final Double longitude = (Double) postSnap.child("Longitude").getValue();
 
-
                         mMapView.getMapAsync(map -> {
                             if(latitude!=null&&longitude!=null){
                                 LatLng current = new LatLng(latitude,longitude);
-                                float scale = 5f;
+                                float scale = 6f;
                                 if (Common.bigCountries().contains(Common.COUNTRY))
-                                    scale = 2f;
+                                    scale = 3f;
                                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(current, scale));
                             }
                         });
@@ -141,7 +139,6 @@ public class CountryDetail extends AppCompatActivity {
             no_internet.setVisibility(View.VISIBLE);
         }
 
-
         txtTotalScore = findViewById(R.id.total);
         txtVisaOnArraival = findViewById(R.id.visa_on_arrival);
         txtEta = findViewById(R.id.eTa);
@@ -155,7 +152,6 @@ public class CountryDetail extends AppCompatActivity {
             Intent browserIntent = new Intent(CountryDetail.this, WebViewActivity.class);
             startActivity(browserIntent);
         });
-
 
 
         recyclerView = findViewById(R.id.recycler);

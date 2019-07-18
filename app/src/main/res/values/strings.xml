@@ -39,7 +39,7 @@
     <string name="latitude">latitude</string>
     <string name="longitude">longitude</string>
 
-    <string name="change_region">do you want to change your home region ?</string>
+    <string name="change_region">Do you want to change your citizenship ?</string>
 
     <string name="about_app">Total score means sum of "visa free"\n
        "eTa" and "visa on arrival" countries.\n

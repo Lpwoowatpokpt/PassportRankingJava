@@ -14,8 +14,9 @@ import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -28,7 +29,6 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.flaviofaria.kenburnsview.KenBurnsView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -45,10 +45,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import in.galaxyofandroid.spinerdialog.SpinnerDialog;
+import io.github.inflationx.calligraphy3.CalligraphyConfig;
+import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
+import io.github.inflationx.viewpump.ViewPump;
+import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
-import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks{
 
@@ -62,21 +64,25 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     ImageView passportCover;
     KenBurnsView background;
     ConstraintLayout root;
-    FloatingActionButton fabLocation;
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+        super.attachBaseContext(ViewPumpContextWrapper.wrap(newBase));
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
-                .setDefaultFontPath("fonts/TravelingTypewriter.ttf")
-                .setFontAttrId(R.attr.fontPath)
-                .build());
-        setContentView(R.layout.activity_main);
+
+        ViewPump.init(ViewPump.builder()
+                .addInterceptor(new CalligraphyInterceptor(
+                        new CalligraphyConfig.Builder()
+                                .setDefaultFontPath("fonts/TravelingTypewriter.ttf")
+                                .setFontAttrId(R.attr.fontPath)
+                                .build())).build());
+
+            setContentView(R.layout.activity_main);
 
         tinyDB = new TinyDB(this);
 
@@ -90,14 +96,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         root = findViewById(R.id.root);
         passportCover = findViewById(R.id.passportCover);
 
-        fabLocation = findViewById(R.id.fab_find);
-        fabLocation.setOnClickListener(view -> {
-            String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
-           if (EasyPermissions.hasPermissions(this, perms))
-               setCountryBasedOnUserLocation();
-           else
-               askForLocationPermission();
-        });
     }
 
     @Override
@@ -114,11 +112,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     private void showSnackbar() {
-       Snackbar snackbar = Snackbar
+        Snackbar snackbar = Snackbar
                 .make(root, "No internet connection!", Snackbar.LENGTH_INDEFINITE)
                 .setAction("CONNECT", view -> {
                     if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
-                    wifiManager.setWifiEnabled(true);
+                        wifiManager.setWifiEnabled(true);
                     else
                         startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
                 });
@@ -135,14 +133,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         if (EasyPermissions.hasPermissions(this, perms)){
             setCountryBasedOnUserLocation();
 
-            Log.e("slut", "has permission");
-
             final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             assert manager != null;
             if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 buildAlertMessageNoGps();
             }
-
         }else {
             EasyPermissions.requestPermissions(this, getString(R.string.location_rationale),
                     123, perms);
@@ -155,7 +150,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 .setCancelable(false)
                 .setPositiveButton("Yes", (dialog, id) -> {
                     startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                    fabLocation.setVisibility(View.VISIBLE);
                 })
                 .setNegativeButton("No", (dialog, id) -> dialog.cancel());
         final AlertDialog alert = builder.create();
@@ -185,41 +179,41 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     private void selectCountry(final String country_name) {
-       DatabaseReference country = Common.getDatabase().getReference(Common.Country_Model);
-       Query query = country.orderByChild(Common.Name).equalTo(country_name);
-       query.addListenerForSingleValueEvent(new ValueEventListener() {
-           @Override
-           public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-               for (DataSnapshot postSnap:dataSnapshot.getChildren()){
-                   CountryModel model = postSnap.getValue(CountryModel.class);
+        DatabaseReference country = Common.getDatabase().getReference(Common.Country_Model);
+        Query query = country.orderByChild(Common.Name).equalTo(country_name);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnap:dataSnapshot.getChildren()){
+                    CountryModel model = postSnap.getValue(CountryModel.class);
 
-                   CircularProgressDrawable circularProgressDrawable = new CircularProgressDrawable(getBaseContext());
-                   circularProgressDrawable.setStrokeWidth(5f);
-                   circularProgressDrawable.setCenterRadius(90f);
-                   circularProgressDrawable.start();
+                    CircularProgressDrawable circularProgressDrawable = new CircularProgressDrawable(getBaseContext());
+                    circularProgressDrawable.setStrokeWidth(5f);
+                    circularProgressDrawable.setCenterRadius(90f);
+                    circularProgressDrawable.start();
 
-                   assert model != null;
-                   Glide.with(getApplicationContext())
-                           .load(model.getCover())
-                           .apply(RequestOptions.placeholderOf(circularProgressDrawable))
-                           .into(passportCover);
+                    assert model != null;
+                    Glide.with(getApplicationContext())
+                            .load(model.getCover())
+                            .apply(RequestOptions.placeholderOf(circularProgressDrawable))
+                            .into(passportCover);
 
-                   btnAdd.setText(country_name);
+                    btnAdd.setText(country_name);
 
-                   tinyDB.putString(Common.COUNTRY_NAME, country_name);
-                   tinyDB.putString(Common.COVER, model.getCover());
-                   tinyDB.putDouble(Common.LATITUDE, model.getLatitude());
-                   tinyDB.putDouble(Common.LONGITUDE, model.getLongitude());
+                    tinyDB.putString(Common.COUNTRY_NAME, country_name);
+                    tinyDB.putString(Common.COVER, model.getCover());
+                    tinyDB.putDouble(Common.LATITUDE, model.getLatitude());
+                    tinyDB.putDouble(Common.LONGITUDE, model.getLongitude());
 
-                   btnSubmit.setVisibility(View.VISIBLE);
-               }
-           }
+                    btnSubmit.setVisibility(View.VISIBLE);
+                }
+            }
 
-           @Override
-           public void onCancelled(@NonNull DatabaseError databaseError) {
-               Common.ShowToast(getApplicationContext(), "Error: " + databaseError.getMessage());
-           }
-       });
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Common.ShowToast(getApplicationContext(), "Error: " + databaseError.getMessage());
+            }
+        });
     }
 
     private void getDataFromFirebase() {
@@ -240,7 +234,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                     tinyDB.putBoolean(Common.IS_EXPAND, true);
 
-                    spinnerDialog = new SpinnerDialog(MainActivity.this, countryNames, getString(R.string.select_your_country));
+                    spinnerDialog=new SpinnerDialog(MainActivity.this,countryNames,getString(R.string.select_your_country), R.style.DialogAnimations_SmileWindow,"Close");
+
+                    spinnerDialog.setCancellable(true);
+                    spinnerDialog.setShowKeyboard(false);
+
+                    spinnerDialog.setTitleColor(getResources().getColor(R.color.colorPrimaryText));
+                    spinnerDialog.setCloseColor(getResources().getColor(R.color.visa_requiered));
+
                     spinnerDialog.bindOnSpinerListener((s, pos) -> {
 
                         CircularProgressDrawable circularProgressDrawable = new CircularProgressDrawable(getBaseContext());
@@ -257,12 +258,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                         btnAdd.setText(countryName);
 
-                       tinyDB.putString(Common.COUNTRY_NAME, countryName);
-                       tinyDB.putString(Common.COVER, Common.countryModel.get(pos).getCover());
-                       tinyDB.putDouble(Common.LATITUDE, Common.countryModel.get(pos).getLatitude());
-                       tinyDB.putDouble(Common.LONGITUDE, Common.countryModel.get(pos).getLongitude());
+                        tinyDB.putString(Common.COUNTRY_NAME, countryName);
+                        tinyDB.putString(Common.COVER, Common.countryModel.get(pos).getCover());
+                        tinyDB.putDouble(Common.LATITUDE, Common.countryModel.get(pos).getLatitude());
+                        tinyDB.putDouble(Common.LONGITUDE, Common.countryModel.get(pos).getLongitude());
 
-                       btnSubmit.setVisibility(View.VISIBLE);
+                        btnSubmit.setVisibility(View.VISIBLE);
                     });
                 }
             }
@@ -274,15 +275,34 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         });
     }
 
-    private void startSplashScreen() {
-        startActivity(new Intent(MainActivity.this, Home.class));
-        finish();
+    private void goToHomeActivity() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+
+        LayoutInflater inflater = this.getLayoutInflater();
+        View update_dialog = inflater.inflate(R.layout.splash, null);
+
+        final AlertDialog alert = alertDialog.create();
+        alert.setView(update_dialog);
+        alert.show();
+
+        Handler handler = new Handler();
+        Runnable runnable = () -> {
+            if (alert.isShowing()){
+                alert.dismiss();
+                startActivity(new Intent(MainActivity.this, Home.class));
+                finish();
+            }else {
+                startActivity(new Intent(MainActivity.this, Home.class));
+                finish();
+            }
+        };
+        handler.postDelayed(runnable, 2500);
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
@@ -293,7 +313,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
-
     }
 
     private BroadcastReceiver wifiStateReceiver = new BroadcastReceiver() {
@@ -306,24 +325,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 case WifiManager.WIFI_STATE_ENABLED:
 
                     askForLocationPermission();
-                    getDataFromFirebase();
 
-                    if (!tinyDB.getString(Common.COUNTRY_NAME).isEmpty())
-                        startSplashScreen();
+                    getDataFromFirebase();
 
                     btnAdd.setVisibility(View.VISIBLE);
                     btnAdd.setOnClickListener(v ->   spinnerDialog.showSpinerDialog());
                     break;
-                case WifiManager.WIFI_STATE_DISABLED:
-                   showSnackbar();
-                   if (!tinyDB.getString(Common.COUNTRY_NAME).isEmpty()){
-                       btnSubmit.setText(getString(R.string.proceed_offline));
-                       btnSubmit.setTextColor(Color.RED);
-                       btnSubmit.setVisibility(View.VISIBLE);
-                       btnAdd.setVisibility(View.GONE);
-                       btnSubmit.setOnClickListener(view -> startSplashScreen());
-                   }
 
+                case WifiManager.WIFI_STATE_DISABLED:
+                    showSnackbar();
                     break;
             }
         }

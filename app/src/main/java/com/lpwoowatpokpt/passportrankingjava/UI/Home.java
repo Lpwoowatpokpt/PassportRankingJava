@@ -1,11 +1,9 @@
 package com.lpwoowatpokpt.passportrankingjava.UI;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -13,16 +11,22 @@ import android.graphics.Color;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
-import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
-import android.provider.Settings;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-
-import com.bumptech.glide.util.Util;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.lpwoowatpokpt.passportrankingjava.Common.Common;
@@ -34,24 +38,11 @@ import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.MapFragment;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.RankingFragment;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.TopFragment;
 import com.mahfa.dnswitch.DayNightSwitch;
-import com.mahfa.dnswitch.DayNightSwitchListener;
 
-import androidx.drawerlayout.widget.DrawerLayout;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-
-import android.view.Menu;
-import android.view.View;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
+import io.github.inflationx.calligraphy3.CalligraphyConfig;
+import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
+import io.github.inflationx.viewpump.ViewPump;
+import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 
 public class Home extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -67,20 +58,20 @@ public class Home extends AppCompatActivity
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+        super.attachBaseContext(ViewPumpContextWrapper.wrap(newBase));
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ViewPump.init(ViewPump.builder()
+                .addInterceptor(new CalligraphyInterceptor(
+                        new CalligraphyConfig.Builder()
+                                .setDefaultFontPath("fonts/Roboto-Medium.ttf")
+                                .setFontAttrId(R.attr.fontPath)
+                                .build())).build());
 
         tinyDB = new TinyDB(this);
-
-        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
-                .setDefaultFontPath("fonts/Roboto-Medium.ttf")
-                .setFontAttrId(R.attr.fontPath)
-                .build());
-
         Utils.onActivityCreateSetTheme(this, tinyDB.getInt(Common.THEME_ID));
         setContentView(R.layout.activity_home);
 
@@ -161,7 +152,7 @@ public class Home extends AppCompatActivity
 
         day_nightTxt = settingsLayout.findViewById(R.id.day_night_switchTxt);
         dayNightSwitch = settingsLayout.findViewById(R.id.day_night_switch);
-        dayNightSwitch.setDuration(1500);
+        dayNightSwitch.setDuration(300);
 
         if (tinyDB.getBoolean(Common.IS_DARK_MODE, true)){
             darkModeOn();
