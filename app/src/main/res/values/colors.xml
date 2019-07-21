@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#FFFFFF</color>
     <color name="colorPrimaryDark">#000000</color>
-    <color name="colorAccent">#880E4F</color>
+    <color name="colorAccent">#8BC34A</color>
 
 
     <color name="colorPrimaryText">#050505</color>
@@ -16,5 +16,9 @@
     <color name="eTa">#FF5722</color>
 
     <color name="alertDialogueDark">#12121F</color>
+
+<color name="higlight_ligth">#1976D2</color>
+
+
 
 </resources>

@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
@@ -35,13 +36,13 @@ import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
 import com.lpwoowatpokpt.passportrankingjava.Model.Country;
 import com.lpwoowatpokpt.passportrankingjava.Model.Ranking;
 import com.lpwoowatpokpt.passportrankingjava.R;
-import com.lpwoowatpokpt.passportrankingjava.UI.MainActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
+import es.dmoral.toasty.Toasty;
 import in.galaxyofandroid.spinerdialog.SpinnerDialog;
 
 
@@ -57,7 +58,6 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
         countries = Common.getDatabase().getReference(Common.Countries);
         countries.keepSynced(true);
         topRanking = Common.getDatabase().getReference(Common.Top);
-        topRanking.keepSynced(true);
         setHasOptionsMenu(true);
     }
 
@@ -133,7 +133,7 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
             if (Common.isConnectedToInternet(context))
                 showDialog();
             else {
-                Common.ShowToast(context, getString(R.string.no_internet));
+                Toasty.warning(context, getString(R.string.no_internet), Toast.LENGTH_SHORT, true).show();
             }
         });
 
@@ -238,7 +238,6 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
         final ArrayList<Country>countryList = new ArrayList<>();
 
         Query query = countries.orderByKey().equalTo(tinyDB.getString(Common.COUNTRY_NAME));
-        query.keepSynced(true);
         query.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
             @Override
@@ -255,7 +254,6 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
                         countryList.addAll(Collections.singleton(new Country(entry.getKey(), entry.getValue())));
 
                         status.add(entry.getValue());
-                        tinyDB.putListLong(Common.STATUS,status);
 
                         int visa_free = Collections.frequency(status, (long) 3);
                         int visa_eta = Collections.frequency(status, (long) 2);
@@ -268,20 +266,18 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
                         txtEta.setText(String.valueOf(visa_eta));
                         tatVisaOnArrival.setText(String.valueOf(visa_onArraival));
                         tatVisaRequired.setText(String.valueOf(visa_requiered));
+                        tinyDB.putListLong(Common.STATUS,status);
 
+                       // updateTop(tinyDB.getString(Common.COUNTRY_NAME), tinyDB.getString(Common.COVER), total,visa_free,visa_onArraival,visa_requiered,visa_eta);
 
-
-                        updateTop(tinyDB.getString(Common.COUNTRY_NAME), tinyDB.getString(Common.COVER), total,visa_free,visa_onArraival,visa_requiered,visa_eta);
-
-                        recyclerView.setAdapter(passportAdapter);
-                        swipeRefreshLayout.setRefreshing(false);
                         passportAdapter.notifyDataSetChanged();
+                        swipeRefreshLayout.setRefreshing(false);
                     }
                 }
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Common.ShowToast(context, "Error: " + databaseError);
+                Toasty.error(context, getString(R.string.error_toast) + databaseError.getMessage(),5).show();
             }
         });
         return countryList;
@@ -304,5 +300,6 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
     private void loadRecyclerViewData() {
         swipeRefreshLayout.setRefreshing(true);
         passportAdapter = new PassportAdapter(context, getCountries());
+        recyclerView.setAdapter(passportAdapter);
     }
 }

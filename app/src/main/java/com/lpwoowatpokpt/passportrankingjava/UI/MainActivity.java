@@ -1,11 +1,10 @@
 package com.lpwoowatpokpt.passportrankingjava.UI;
 
 import android.Manifest;
+import android.animation.Animator;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
@@ -18,8 +17,11 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewAnimationUtils;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,7 +30,9 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.flaviofaria.kenburnsview.KenBurnsView;
+import com.droidnet.DroidListener;
+import com.droidnet.DroidNet;
+import com.dx.dxloadingbutton.lib.LoadingButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -44,25 +48,31 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.dmoral.toasty.Toasty;
 import in.galaxyofandroid.spinerdialog.SpinnerDialog;
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
 import io.github.inflationx.viewpump.ViewPump;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
+import kotlin.Unit;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks{
+public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks, DroidListener {
 
-    private WifiManager wifiManager;
 
     ArrayList<String> countryNames = new ArrayList<>();
     TinyDB tinyDB;
 
-    Button btnAdd, btnSubmit;
+    private DroidNet mDroidNet;
+    private WifiManager wifiManager;
+    View animateView;
+
+    LoadingButton btnAdd, btnSubmit;
     SpinnerDialog spinnerDialog;
     ImageView passportCover;
-    KenBurnsView background;
+    ImageView background;
+    TextView countryName;
     ConstraintLayout root;
 
     @Override
@@ -86,45 +96,81 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         tinyDB = new TinyDB(this);
 
+        getDataFromFirebase();
+
+        mDroidNet = DroidNet.getInstance();
+        mDroidNet.addInternetConnectivityListener(this);
+
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
+        countryName = findViewById(R.id.countryName);
+
         background = findViewById(R.id.background);
+        animateView = findViewById(R.id.animate_view);
+
         btnAdd = findViewById(R.id.addBtn);
         btnSubmit = findViewById(R.id.submitBtn);
-        btnSubmit.setVisibility(View.INVISIBLE);
-        btnSubmit.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, Home.class)));
+        btnSubmit.setEnabled(false);
+        btnSubmit.setOnClickListener(v -> {
+            btnSubmit.startLoading();
+            btnSubmit.postDelayed(() -> {
+                btnSubmit.loadingSuccessful();
+                btnSubmit.setAnimationEndAction(animationType -> {
+                    toNextPage();
+                    return Unit.INSTANCE;
+                });
+            },500);
+        });
         root = findViewById(R.id.root);
         passportCover = findViewById(R.id.passportCover);
 
+        if (!tinyDB.getString(Common.COUNTRY_NAME).isEmpty()) {
+            goToHomeActivity();
+            btnAdd.setVisibility(View.GONE);
+            btnSubmit.setVisibility(View.GONE);
+        }
     }
+
+    private void toNextPage() {
+        int cx = (btnSubmit.getLeft() + btnSubmit.getRight()) / 2;
+        int cy = (btnSubmit.getTop() + btnSubmit.getBottom()) / 2;
+
+        Animator animator = ViewAnimationUtils.createCircularReveal(animateView,cx,cy,0,getResources().getDisplayMetrics().heightPixels * 1.2f);
+        animator.setDuration(2000);
+        animator.setInterpolator(new AccelerateDecelerateInterpolator());
+        animateView.setVisibility(View.VISIBLE);
+        animator.start();
+        animator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                startActivity(new Intent(MainActivity.this, Home.class));
+                btnSubmit.reset();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
+    }
+
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        IntentFilter intentFilter = new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION);
-        registerReceiver(wifiStateReceiver, intentFilter);
+    protected void onDestroy() {
+        super.onDestroy();
+        mDroidNet.removeInternetConnectivityChangeListener(this);
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        unregisterReceiver(wifiStateReceiver);
-    }
-
-    private void showSnackbar() {
-        Snackbar snackbar = Snackbar
-                .make(root, "No internet connection!", Snackbar.LENGTH_INDEFINITE)
-                .setAction("CONNECT", view -> {
-                    if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
-                        wifiManager.setWifiEnabled(true);
-                    else
-                        startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                });
-
-        snackbar.setActionTextColor(Color.RED);
-        snackbar.setTextColor(Color.WHITE);
-        snackbar.show();
-    }
 
     @AfterPermissionGranted(123)
     protected void askForLocationPermission() {
@@ -198,20 +244,20 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                             .apply(RequestOptions.placeholderOf(circularProgressDrawable))
                             .into(passportCover);
 
-                    btnAdd.setText(country_name);
+                    countryName.setText(country_name);
 
                     tinyDB.putString(Common.COUNTRY_NAME, country_name);
                     tinyDB.putString(Common.COVER, model.getCover());
                     tinyDB.putDouble(Common.LATITUDE, model.getLatitude());
                     tinyDB.putDouble(Common.LONGITUDE, model.getLongitude());
 
-                    btnSubmit.setVisibility(View.VISIBLE);
+                    btnSubmit.setEnabled(true);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Common.ShowToast(getApplicationContext(), "Error: " + databaseError.getMessage());
+                Toasty.error(getBaseContext(), getString(R.string.error_toast) + databaseError.getMessage(),5).show();
             }
         });
     }
@@ -236,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                     spinnerDialog=new SpinnerDialog(MainActivity.this,countryNames,getString(R.string.select_your_country), R.style.DialogAnimations_SmileWindow,"Close");
 
-                    spinnerDialog.setCancellable(true);
+                    spinnerDialog.setCancellable(false);
                     spinnerDialog.setShowKeyboard(false);
 
                     spinnerDialog.setTitleColor(getResources().getColor(R.color.colorPrimaryText));
@@ -254,28 +300,47 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 .apply(RequestOptions.placeholderOf(circularProgressDrawable))
                                 .into(passportCover);
 
-                        String countryName = Common.countryModel.get(pos).getName();
+                        String _countryName = Common.countryModel.get(pos).getName();
 
-                        btnAdd.setText(countryName);
+                        countryName.setText(_countryName);
 
-                        tinyDB.putString(Common.COUNTRY_NAME, countryName);
+                        tinyDB.putString(Common.COUNTRY_NAME, _countryName);
                         tinyDB.putString(Common.COVER, Common.countryModel.get(pos).getCover());
                         tinyDB.putDouble(Common.LATITUDE, Common.countryModel.get(pos).getLatitude());
                         tinyDB.putDouble(Common.LONGITUDE, Common.countryModel.get(pos).getLongitude());
 
-                        btnSubmit.setVisibility(View.VISIBLE);
+                        btnSubmit.setEnabled(true);
                     });
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Common.ShowToast(getApplicationContext(), "Error: " + databaseError);
+                Toasty.error(getBaseContext(), getString(R.string.error_toast) + databaseError.getMessage(),5).show();
             }
         });
     }
 
+    private void showSnackbar() {
+        Snackbar snackbar = Snackbar
+                .make(root, "No internet connection!", Snackbar.LENGTH_INDEFINITE)
+                .setAction("CONNECT", view -> {
+                    if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+                        wifiManager.setWifiEnabled(true);
+                    else
+                        startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                });
+
+        snackbar.setActionTextColor(Color.RED);
+        snackbar.setTextColor(Color.WHITE);
+        snackbar.show();
+    }
+
     private void goToHomeActivity() {
+        btnAdd.setEnabled(false);
+        btnSubmit.setEnabled(false);
+        background.setImageResource(R.drawable.splash);
+
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 
         LayoutInflater inflater = this.getLayoutInflater();
@@ -283,6 +348,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         final AlertDialog alert = alertDialog.create();
         alert.setView(update_dialog);
+        alert.setCancelable(true);
         alert.show();
 
         Handler handler = new Handler();
@@ -296,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 finish();
             }
         };
-        handler.postDelayed(runnable, 2500);
+        handler.postDelayed(runnable, 2000);
     }
 
 
@@ -315,27 +381,28 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
     }
 
-    private BroadcastReceiver wifiStateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int wifiStateExtra = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,
-                    WifiManager.WIFI_STATE_UNKNOWN);
 
-            switch (wifiStateExtra) {
-                case WifiManager.WIFI_STATE_ENABLED:
-
-                    askForLocationPermission();
-
-                    getDataFromFirebase();
-
-                    btnAdd.setVisibility(View.VISIBLE);
-                    btnAdd.setOnClickListener(v ->   spinnerDialog.showSpinerDialog());
-                    break;
-
-                case WifiManager.WIFI_STATE_DISABLED:
-                    showSnackbar();
-                    break;
+    @Override
+    public void onInternetConnectivityChanged(boolean isConnected) {
+        if (isConnected){
+            if (tinyDB.getString(Common.COUNTRY_NAME).isEmpty()){
+                askForLocationPermission();
+                btnAdd.setEnabled(true);
+                btnAdd.setOnClickListener(v -> {
+                    if (countryNames.size()>0){
+                        spinnerDialog.showSpinerDialog();
+                    }
+                    else{
+                        Toasty.error(getApplicationContext(), getString(R.string.poor_internet), Toast.LENGTH_SHORT, true).show();
+                    }
+                });
             }
+        }else {
+            btnAdd.setEnabled(false);
+            if (tinyDB.getString(Common.COUNTRY_NAME).isEmpty())
+            showSnackbar();
+            else
+                Toasty.warning(getApplicationContext(), getString(R.string.no_internet), Toast.LENGTH_SHORT, true).show();
         }
-    };
+    }
 }

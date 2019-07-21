@@ -83,13 +83,4 @@ public class Common {
         }
         return false;
     }
-
-    public static void ShowToast(Context context, String message){
-        Toast toast = Toast.makeText(context,
-                message, Toast.LENGTH_LONG);
-        toast.show();
-    }
-
-
-
 }

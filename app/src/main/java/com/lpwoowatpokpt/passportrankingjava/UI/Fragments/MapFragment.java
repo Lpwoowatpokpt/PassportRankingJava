@@ -2,13 +2,13 @@ package com.lpwoowatpokpt.passportrankingjava.UI.Fragments;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +21,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -30,8 +29,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.lpwoowatpokpt.passportrankingjava.Common.Common;
 import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
 import com.lpwoowatpokpt.passportrankingjava.R;
+import com.lpwoowatpokpt.passportrankingjava.UI.CountryDetail;
 
 import java.util.Objects;
+
+import es.dmoral.toasty.Toasty;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -71,47 +73,55 @@ public class MapFragment extends Fragment {
             e.printStackTrace();
         }
 
-        mMapView.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(GoogleMap mMap) {
-                googleMap = mMap;
+        mMapView.getMapAsync(mMap -> {
+            googleMap = mMap;
 
-                try {
-                    boolean success = googleMap.setMapStyle(
-                            MapStyleOptions.loadRawResourceStyle(
-                                    context, R.raw.mapstyle));
+            try {
 
-                    if (!success) {
-                        Log.e("Map", "Style parsing failed.");
-                        Common.ShowToast(context, "Style parsing failed.");
-                    }
-                } catch (Resources.NotFoundException e) {
-                    Log.e("Map", "Can't find style. Error: ", e);
-                    Common.ShowToast(context, "Can't find style. Error: " + e);
+                int res;
+                if (tinyDB.getInt(Common.THEME_ID)==0)
+                    res = R.raw.mapstyle_light;
+                else
+                    res = R.raw.mapstyle;
+
+                boolean success = googleMap.setMapStyle(
+                        MapStyleOptions.loadRawResourceStyle(
+                                context, res));
+
+                if (!success) {
+                    Toasty.error(context, "Style parsing failed.",5).show();
                 }
-
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()),
-                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Common.RequestCameraPermissionId);
-                    return;
-                }
-
-                googleMap.setMyLocationEnabled(true);
-                mMap.getUiSettings().setZoomControlsEnabled(true);
-
-                Double lat = tinyDB.getDouble(Common.LATITUDE,0);
-                Double longitude = tinyDB.getDouble(Common.LONGITUDE, 0);
-                LatLng current = new LatLng(lat,longitude);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(current,6f));
-
-                for (int i=0; i < Common.countryModel.size(); i++){
-                    createMarker(Common.countryModel.get(i).getLatitude(),
-                            Common.countryModel.get(i).getLongitude(),
-                            Common.countryModel.get(i).getName(),
-                            tinyDB.getListLong(Common.STATUS).get(i));
-                }
-
+            } catch (Resources.NotFoundException e) {
+                Toasty.error(context, "Can't find style. Error: " + e,5).show();
             }
+
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()),
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Common.RequestCameraPermissionId);
+                return;
+            }
+
+            googleMap.setMyLocationEnabled(true);
+            mMap.getUiSettings().setZoomControlsEnabled(true);
+
+            Double lat = tinyDB.getDouble(Common.LATITUDE,0);
+            Double longitude = tinyDB.getDouble(Common.LONGITUDE, 0);
+            LatLng current = new LatLng(lat,longitude);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(current,6f));
+
+            for (int i=0; i < Common.countryModel.size(); i++){
+                createMarker(Common.countryModel.get(i).getLatitude(),
+                        Common.countryModel.get(i).getLongitude(),
+                        Common.countryModel.get(i).getName(),
+                        tinyDB.getListLong(Common.STATUS).get(i));
+            }
+
+            googleMap.setOnInfoWindowClickListener(marker -> {
+                Common.COUNTRY = marker.getTitle();
+                Intent intent = new Intent(getActivity(), CountryDetail.class);
+                startActivity(intent);
+            });
+
         });
         return myFragment;
     }
@@ -130,16 +140,21 @@ public class MapFragment extends Fragment {
         }
         else if (status==2){
             _status = getString(R.string.eTA);
+            if (tinyDB.getInt(Common.THEME_ID)==1)
             icon = bitmapDescriptorFromVector(context, R.drawable.ic_important_devices_yellow_24dp);
+            else
+                icon = bitmapDescriptorFromVector(context, R.drawable.ic_important_devices_orange_24dp);
         }
         else if (status==3){
             _status = getString(R.string.visa_free);
             icon = bitmapDescriptorFromVector(context, R.drawable.ic_flight_green_24dp);
         }
         else {
+            if (tinyDB.getInt(Common.THEME_ID)==1)
             icon = bitmapDescriptorFromVector(context, R.drawable.ic_home_white_24dp);
+            else
+                icon = bitmapDescriptorFromVector(context, R.drawable.ic_home_black_24dp);
         }
-
 
 
         googleMap.addMarker(new MarkerOptions()
@@ -148,7 +163,11 @@ public class MapFragment extends Fragment {
                 .title(name)
                 .snippet(_status)
                 .icon(icon));
+
+
     }
+
+
 
     private BitmapDescriptor bitmapDescriptorFromVector(Context context, int vectorResId) {
         Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);

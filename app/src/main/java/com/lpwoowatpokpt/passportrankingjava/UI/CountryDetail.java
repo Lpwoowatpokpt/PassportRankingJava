@@ -3,6 +3,7 @@ package com.lpwoowatpokpt.passportrankingjava.UI;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,14 +14,17 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
@@ -39,6 +43,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
+import es.dmoral.toasty.Toasty;
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
 import io.github.inflationx.viewpump.ViewPump;
@@ -59,7 +64,6 @@ public class CountryDetail extends AppCompatActivity {
 
     FloatingActionButton fab;
 
-    Query query;
     PassportAdapter passportAdapter;
 
     @Override
@@ -88,8 +92,18 @@ public class CountryDetail extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        query = Common.getDatabase().getReference(Common.Countries)
-                .orderByKey().equalTo(Common.COUNTRY);
+        AppBarLayout appBarLayout = findViewById(R.id.appbar);
+        CoordinatorLayout.LayoutParams params =
+                (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
+        AppBarLayout.Behavior behavior = new AppBarLayout.Behavior();
+        behavior.setDragCallback(new AppBarLayout.Behavior.DragCallback() {
+            @Override
+            public boolean canDrag(AppBarLayout appBarLayout) {
+                return false;
+            }
+        });
+        params.setBehavior(behavior);
+
         CollapsingToolbarLayout ctl = findViewById(R.id.collapsing_toolbar);
         ctl.setTitle(Common.COUNTRY);
 
@@ -99,41 +113,18 @@ public class CountryDetail extends AppCompatActivity {
 
         no_internet = findViewById(R.id.no_internet);
 
+
+
         try {
             MapsInitializer.initialize(getApplicationContext());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        Query mapQuery = Common.getDatabase().getReference(Common.Country_Model)
-                .orderByChild(Common.Name).equalTo(Common.COUNTRY);
-        mapQuery.keepSynced(true);
+
 
         if (Common.isConnectedToInternet(getApplicationContext())){
-            mapQuery.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot postSnap: dataSnapshot.getChildren()){
-                        final Double latitude = (Double) postSnap.child("Latitude").getValue();
-                        final Double longitude = (Double) postSnap.child("Longitude").getValue();
-
-                        mMapView.getMapAsync(map -> {
-                            if(latitude!=null&&longitude!=null){
-                                LatLng current = new LatLng(latitude,longitude);
-                                float scale = 6f;
-                                if (Common.bigCountries().contains(Common.COUNTRY))
-                                    scale = 3f;
-                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(current, scale));
-                            }
-                        });
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Common.ShowToast(getApplicationContext(), "Error: " + databaseError.getMessage());
-                }
-            });
+            new LoadMap().execute();
         }else {
             mMapView.setVisibility(View.GONE);
             no_internet.setVisibility(View.VISIBLE);
@@ -144,6 +135,7 @@ public class CountryDetail extends AppCompatActivity {
         txtEta = findViewById(R.id.eTa);
         txtVisaFree = findViewById(R.id.visa_free);
         txtVisaRequiered = findViewById(R.id.visaRequiered);
+
 
         loadingInfoBar = findViewById(R.id.loading_recycler);
 
@@ -163,12 +155,11 @@ public class CountryDetail extends AppCompatActivity {
         passportAdapter = new PassportAdapter(getApplicationContext(), getCountries());
     }
 
-
-
-
-
     private ArrayList<Country> getCountries(){
         final ArrayList<Country>countryList = new ArrayList<>();
+
+        Query query = Common.getDatabase().getReference(Common.Countries)
+                .orderByKey().equalTo(Common.COUNTRY);
 
         query.addValueEventListener(new ValueEventListener() {
             @SuppressLint("NewApi")
@@ -214,8 +205,6 @@ public class CountryDetail extends AppCompatActivity {
 
     }
 
-
-
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         if (menuItem.getItemId() == android.R.id.home) {
@@ -234,6 +223,52 @@ public class CountryDetail extends AppCompatActivity {
         finish();
     }
 
+
+    @SuppressLint("StaticFieldLeak")
+    public class LoadMap extends AsyncTask<Void,Void,Void>{
+        @Override
+        protected Void doInBackground(Void... voids) {
+            Query mapQuery = Common.getDatabase().getReference(Common.Country_Model)
+                    .orderByChild(Common.Name).equalTo(Common.COUNTRY);
+
+            mapQuery.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot postSnap: dataSnapshot.getChildren()){
+
+                        final Double latitude = (Double) postSnap.child("Latitude").getValue();
+                        final Double longitude = (Double) postSnap.child("Longitude").getValue();
+
+                        String flagPath = (String)postSnap.child(Common.Flag).getValue();
+
+                        mMapView.getMapAsync(map -> {
+                            if(latitude!=null&&longitude!=null){
+                                LatLng current = new LatLng(latitude,longitude);
+                                float scale = 6f;
+                                if (Common.bigCountries().contains(Common.COUNTRY))
+                                    scale = 3f;
+                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(current, scale));
+
+
+                                ImageView flag = findViewById(R.id.flag);
+                                Glide.with(getBaseContext()).load(flagPath).into(flag);
+                                float finalScale = scale;
+                                flag.setOnClickListener(view -> map.moveCamera(CameraUpdateFactory.newLatLngZoom(current, finalScale)));
+
+                            }
+                        });
+
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Toasty.error(getBaseContext(), getString(R.string.error_toast) + databaseError.getMessage(),5).show();
+                }
+            });
+            return null;
+        }
+    }
 
     @Override
     public void onResume() {

@@ -2,10 +2,8 @@ package com.lpwoowatpokpt.passportrankingjava.UI;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.wifi.WifiManager;
@@ -17,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +26,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.droidnet.DroidListener;
+import com.droidnet.DroidNet;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.lpwoowatpokpt.passportrankingjava.Common.Common;
@@ -39,17 +40,19 @@ import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.RankingFragment;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.TopFragment;
 import com.mahfa.dnswitch.DayNightSwitch;
 
+import es.dmoral.toasty.Toasty;
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
 import io.github.inflationx.viewpump.ViewPump;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 
 public class Home extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, DroidListener {
 
     Toolbar toolbar;
     TinyDB tinyDB;
 
+    private DroidNet mDroidNet;
     private WifiManager wifiManager;
 
     TextView day_nightTxt;
@@ -81,8 +84,8 @@ public class Home extends AppCompatActivity
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, Common.RequestCameraPermissionId);
         }
 
-
-        root = findViewById(R.id.container);
+        mDroidNet = DroidNet.getInstance();
+        mDroidNet.addInternetConnectivityListener(this);
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
@@ -104,16 +107,24 @@ public class Home extends AppCompatActivity
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        IntentFilter intentFilter = new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION);
-        registerReceiver(wifiStateReceiver, intentFilter);
+    protected void onDestroy() {
+        super.onDestroy();
+        mDroidNet.removeInternetConnectivityChangeListener(this);
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        unregisterReceiver(wifiStateReceiver);
+    private void showSnackbar() {
+        root = findViewById(R.id.container);
+        Snackbar snackbar = Snackbar
+                .make(root, "No internet connection!", Snackbar.LENGTH_INDEFINITE)
+                .setAction("CONNECT", view -> {
+                    if(android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+                        wifiManager.setWifiEnabled(true);
+                    else
+                        startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                });
+        snackbar.setActionTextColor(Color.RED);
+        snackbar.setTextColor(Color.WHITE);
+        snackbar.show();
     }
 
     @Override
@@ -162,19 +173,17 @@ public class Home extends AppCompatActivity
 
         dayNightSwitch.setListener(isNight -> {
             if (!isNight){
-                Common.ShowToast(getApplicationContext(), getString(R.string.dark_mode_off));
+                Toasty.info(getBaseContext(), getString(R.string.dark_mode_off), Toast.LENGTH_SHORT, true).show();
                 darkModeOff();
             }else {
-                Common.ShowToast(getApplicationContext(), getString(R.string.dark_mode_on));
+                Toasty.info(getBaseContext(), getString(R.string.dark_mode_on), Toast.LENGTH_SHORT, true).show();
                 darkModeOn();
             }
 
             Utils.ChangeToTheme(this);
         });
 
-
         builder.setNegativeButton(getString(R.string.close), (dialogInterface, i) -> dialogInterface.dismiss());
-
         AlertDialog dialog = builder.create();
         dialog.show();
     }
@@ -190,7 +199,6 @@ public class Home extends AppCompatActivity
         tinyDB.putBoolean(Common.IS_DARK_MODE, true);
         tinyDB.putInt(Common.THEME_ID,1);
     }
-
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -222,7 +230,6 @@ public class Home extends AppCompatActivity
         transaction.replace(R.id.container, selectedFragment);
         transaction.commit();
 
-
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -235,35 +242,10 @@ public class Home extends AppCompatActivity
         transaction.commit();
     }
 
-    private BroadcastReceiver wifiStateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int wifiStateExtra = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE,
-                    WifiManager.WIFI_STATE_UNKNOWN);
-
-            switch (wifiStateExtra) {
-                case WifiManager.WIFI_STATE_ENABLED:
-
-                    break;
-                case WifiManager.WIFI_STATE_DISABLED:
-                    showSnackbar();
-                    break;
-            }
+    @Override
+    public void onInternetConnectivityChanged(boolean isConnected) {
+        if (!isConnected){
+            showSnackbar();
         }
-    };
-
-    private void showSnackbar() {
-        Snackbar snackbar = Snackbar
-                .make(root, "No internet connection!", Snackbar.LENGTH_INDEFINITE)
-                .setAction("CONNECT", view -> {
-                    if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
-                        wifiManager.setWifiEnabled(true);
-                    else
-                        startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                });
-
-        snackbar.setActionTextColor(Color.RED);
-        snackbar.setTextColor(Color.WHITE);
-        snackbar.show();
     }
 }

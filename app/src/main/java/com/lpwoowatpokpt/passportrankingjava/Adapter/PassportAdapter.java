@@ -3,7 +3,6 @@ package com.lpwoowatpokpt.passportrankingjava.Adapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,12 +28,14 @@ import com.lpwoowatpokpt.passportrankingjava.UI.CountryDetail;
 
 import java.util.ArrayList;
 
+import es.dmoral.toasty.Toasty;
+
 public class PassportAdapter extends RecyclerView.Adapter<PassportAdapter.ViewHolder>
 implements Filterable {
 
      private Context context;
      ArrayList<Country> mCountryList;
-     ArrayList<Country>mFilteredList;
+     private ArrayList<Country>mFilteredList;
      private CustomFilter filter;
 
     public PassportAdapter(Context context, ArrayList<Country> mCountryList) {
@@ -84,13 +85,7 @@ implements Filterable {
         }
         else if (viewHolder.countryStatus.getText().toString().matches("-1")){
             viewHolder.countryStatus.setText("-_-");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                viewHolder.countryStatus.setTextColor(Color.BLACK);
-            }
         }
-
-
-        if(Common.isConnectedToInternet(context)){
 
             if (mCountryList==mFilteredList){
                 Glide.with(context)
@@ -113,12 +108,10 @@ implements Filterable {
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Common.ShowToast(context, "Error :" + databaseError.getMessage());
+                                Toasty.error(context, context.getString(R.string.error_toast) + databaseError.getMessage(),5).show();
                             }
                         });
             }
-        }
-
 
         viewHolder.card.setOnClickListener(v -> {
             Common.COUNTRY = mCountryList.get(pos).getKey();
@@ -138,7 +131,6 @@ implements Filterable {
         }
         return filter;
     }
-
 
     class ViewHolder extends RecyclerView.ViewHolder{
         private TextView countryName, countryStatus;

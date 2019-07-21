@@ -14,10 +14,11 @@
         android:layout_height="wrap_content">
 
         <ImageView
+            android:layout_margin="8dp"
             android:layout_gravity="center"
-            android:src="@mipmap/logo"
-            android:layout_width="96dp"
-            android:layout_height="96dp"
+            android:src="@mipmap/ic_launcher_round"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:contentDescription="@string/app_name" />
 
         <TextView
@@ -40,9 +41,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-        <androidx.core.widget.ContentLoadingProgressBar
+        <ProgressBar
            android:layout_gravity="center"
-            android:layout_marginTop="8dp"
+            android:layout_margin="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 

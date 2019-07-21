@@ -6,7 +6,7 @@
     <string name="version">version 0.2</string>
     <string name="select_your_country">choose your citizenship</string>
     <string name="change_your_country">change your citizenship</string>
-    <string name="submit">submit</string>
+    <string name="submit">start</string>
     <string name="no_internet">no internet connection</string>
     <string name="title_activity_home">Home</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -50,5 +50,7 @@
     <string name="proceed_offline">proceed offline</string>
     <string name="dark_mode_on">Dark mode on!</string>
     <string name="dark_mode_off">Dark mode off!</string>
+    <string name="error_toast">Error :</string>
+    <string name="poor_internet">poor internet connection</string>
 
 </resources>
