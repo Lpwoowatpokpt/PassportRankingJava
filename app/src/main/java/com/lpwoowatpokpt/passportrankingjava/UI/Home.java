@@ -34,6 +34,7 @@ import com.lpwoowatpokpt.passportrankingjava.Common.Common;
 import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
 import com.lpwoowatpokpt.passportrankingjava.Common.Utils;
 import com.lpwoowatpokpt.passportrankingjava.R;
+import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.CompareFragment;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.InfoFragment;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.MapFragment;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.RankingFragment;
@@ -210,6 +211,10 @@ public class Home extends AppCompatActivity
             case R.id.nav_ranking:
                 selectedFragment = RankingFragment.newInstance(this);
                 toolbar.setTitle(getString(R.string.menu_ranking));
+                break;
+            case R.id.nav_compare:
+                selectedFragment = CompareFragment.newInstance(this);
+                toolbar.setTitle(getString(R.string.menu_compare));
                 break;
             case R.id.nav_top:
                 selectedFragment = TopFragment.newInstance(this);

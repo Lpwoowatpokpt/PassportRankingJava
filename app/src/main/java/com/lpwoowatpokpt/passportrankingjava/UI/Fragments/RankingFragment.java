@@ -34,6 +34,7 @@ import com.lpwoowatpokpt.passportrankingjava.Adapter.PassportAdapter;
 import com.lpwoowatpokpt.passportrankingjava.Common.Common;
 import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
 import com.lpwoowatpokpt.passportrankingjava.Model.Country;
+import com.lpwoowatpokpt.passportrankingjava.Model.CountryModel;
 import com.lpwoowatpokpt.passportrankingjava.Model.Ranking;
 import com.lpwoowatpokpt.passportrankingjava.R;
 
@@ -257,18 +258,20 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
                         int visa_free = Collections.frequency(status, (long) 3);
                         int visa_eta = Collections.frequency(status, (long) 2);
-                        int visa_onArraival = Collections.frequency(status, (long) 1);
-                        int visa_requiered = Collections.frequency(status, (long) 0);
-                        int total = visa_free+visa_onArraival+visa_eta;
+                        int visa_onArrival = Collections.frequency(status, (long) 1);
+                        int visa_required = Collections.frequency(status, (long) 0);
+                        int total = visa_free+visa_onArrival+visa_eta;
+
+                        updateTop(tinyDB.getString(Common.COUNTRY_NAME), tinyDB.getString(Common.COVER), total, visa_free, visa_onArrival, visa_required, visa_eta);
 
                         txtTotalScore.setText(String.valueOf(total));
                         txtVisaFree.setText(String.valueOf(visa_free));
                         txtEta.setText(String.valueOf(visa_eta));
-                        tatVisaOnArrival.setText(String.valueOf(visa_onArraival));
-                        tatVisaRequired.setText(String.valueOf(visa_requiered));
-                        tinyDB.putListLong(Common.STATUS,status);
+                        tatVisaOnArrival.setText(String.valueOf(visa_onArrival));
+                        tatVisaRequired.setText(String.valueOf(visa_required));
 
-                       // updateTop(tinyDB.getString(Common.COUNTRY_NAME), tinyDB.getString(Common.COVER), total,visa_free,visa_onArraival,visa_requiered,visa_eta);
+                        tinyDB.putInt(Common.MOBILITY_SCORE, total);
+                        tinyDB.putListLong(Common.STATUS,status);
 
                         passportAdapter.notifyDataSetChanged();
                         swipeRefreshLayout.setRefreshing(false);
@@ -283,14 +286,10 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
         return countryList;
     }
 
-
-
-
     private void updateTop(String countryName, String coverPath, int total, int visa_free, int visa_onArrival, int visa_requiered, int visa_eta) {
         topRanking.child(countryName)
                 .setValue(new Ranking(countryName,coverPath,total,visa_free,visa_onArrival,visa_eta,visa_requiered));
     }
-
 
     @Override
     public void onRefresh() {
@@ -299,7 +298,7 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
     private void loadRecyclerViewData() {
         swipeRefreshLayout.setRefreshing(true);
-        passportAdapter = new PassportAdapter(context, getCountries());
+        passportAdapter = new PassportAdapter(context, getCountries(), tinyDB);
         recyclerView.setAdapter(passportAdapter);
     }
 }

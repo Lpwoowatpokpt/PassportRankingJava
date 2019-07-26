@@ -152,7 +152,7 @@ public class CountryDetail extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        passportAdapter = new PassportAdapter(getApplicationContext(), getCountries());
+        passportAdapter = new PassportAdapter(getApplicationContext(), getCountries(), tinyDB);
     }
 
     private ArrayList<Country> getCountries(){

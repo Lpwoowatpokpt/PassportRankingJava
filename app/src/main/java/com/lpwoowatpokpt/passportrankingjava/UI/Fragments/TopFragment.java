@@ -34,6 +34,7 @@ public class TopFragment extends Fragment {
     private TopFragment(Context context) {
         this.context = context;
         ranking = Common.getDatabase().getReference(Common.Top);
+        ranking.keepSynced(true);
     }
 
     public static TopFragment newInstance(Context context)

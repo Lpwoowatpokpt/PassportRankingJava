@@ -37,8 +37,10 @@ public class Common {
     public static final String STATUS = "status";
     public static final String IS_EXPAND = "is_expand";
     public static final String COUNTRY_LIST = "country_list";
+    public static final String FLAG_LIST = "flag_list";
     public static final String COUNTRY_NAME = "country";
     public static final String COVER = "cover";
+    public static final String MOBILITY_SCORE = "mobility_score";
     public static final String LATITUDE = "latitude";
     public static final String LONGITUDE = "longitude";
     public static final String IS_DARK_MODE = "is_dark_mode";

@@ -9,6 +9,10 @@
             android:icon="@drawable/passport"
             android:title="@string/menu_ranking" />
         <item
+            android:id="@+id/nav_compare"
+            android:icon="@drawable/compare"
+            android:title="@string/menu_compare" />
+        <item
             android:id="@+id/nav_top"
             android:icon="@drawable/rank"
             android:title="@string/menu_top" />

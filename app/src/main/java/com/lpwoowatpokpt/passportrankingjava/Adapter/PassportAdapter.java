@@ -22,6 +22,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.lpwoowatpokpt.passportrankingjava.Common.Common;
+import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
 import com.lpwoowatpokpt.passportrankingjava.Model.Country;
 import com.lpwoowatpokpt.passportrankingjava.R;
 import com.lpwoowatpokpt.passportrankingjava.UI.CountryDetail;
@@ -34,14 +35,16 @@ public class PassportAdapter extends RecyclerView.Adapter<PassportAdapter.ViewHo
 implements Filterable {
 
      private Context context;
+     TinyDB tinyDB;
      ArrayList<Country> mCountryList;
      private ArrayList<Country>mFilteredList;
      private CustomFilter filter;
 
-    public PassportAdapter(Context context, ArrayList<Country> mCountryList) {
+    public PassportAdapter(Context context, ArrayList<Country> mCountryList, TinyDB tinyDB) {
         this.context = context;
         this.mCountryList = mCountryList;
         this.mFilteredList = mCountryList;
+        this.tinyDB = tinyDB;
     }
 
     @NonNull
@@ -89,7 +92,7 @@ implements Filterable {
 
             if (mCountryList==mFilteredList){
                 Glide.with(context)
-                        .load(Common.countryModel.get(pos).getImage())
+                        .load(tinyDB.getListString(Common.FLAG_LIST).get(pos))
                         .into(viewHolder.countryFlag);
             }else {
                 DatabaseReference country_model = Common.getDatabase().getReference(Common.Country_Model);

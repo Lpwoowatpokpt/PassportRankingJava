@@ -18,7 +18,7 @@
     <color name="alertDialogueDark">#12121F</color>
 
 <color name="higlight_ligth">#1976D2</color>
-
+    <color name="cell_border_color">#303F9F</color>
 
 
 </resources>

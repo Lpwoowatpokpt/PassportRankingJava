@@ -28,6 +28,7 @@
     <string name="menu_top">Top</string>
     <string name="menu_map">Map</string>
     <string name="menu_info">About</string>
+    <string name="menu_compare">Compare</string>
 
     <string name="total">total score</string>
 
@@ -52,5 +53,8 @@
     <string name="dark_mode_off">Dark mode off!</string>
     <string name="error_toast">Error :</string>
     <string name="poor_internet">poor internet connection</string>
+    <string name="country_long_blank">United Arab Emirates</string>
+    <string name="select_to_compare">choose citizenship to compare</string>
+    <string name="country_exists">already present…</string>
 
 </resources>

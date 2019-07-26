@@ -56,8 +56,6 @@ public class MapFragment extends Fragment {
         tinyDB = new TinyDB(context);
     }
 
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

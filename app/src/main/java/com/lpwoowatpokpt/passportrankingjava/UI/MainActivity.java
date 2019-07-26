@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
     ArrayList<String> countryNames = new ArrayList<>();
+    ArrayList<String> countryFlags = new ArrayList<>();
     TinyDB tinyDB;
 
     private DroidNet mDroidNet;
@@ -273,10 +275,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     Common.countryModel.add(model);
 
                     String _countryNames = postSnap.child(Common.Name).getValue(String.class);
-
                     countryNames.add(_countryNames);
-
                     tinyDB.putListString(Common.COUNTRY_LIST, countryNames);
+
+                    String _countryFlags = postSnap.child(Common.Flag).getValue(String.class);
+                    countryFlags.add(_countryFlags);
+                    tinyDB.putListString(Common.FLAG_LIST, countryFlags);
 
                     tinyDB.putBoolean(Common.IS_EXPAND, true);
 
