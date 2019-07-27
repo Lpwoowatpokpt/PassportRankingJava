@@ -5,7 +5,6 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/tools"
     android:layout_margin="8dp"
-    app:cardElevation="6dp"
     app:ignore="NamespaceTypo">
 
     <LinearLayout

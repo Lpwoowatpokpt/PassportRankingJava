@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -34,6 +33,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.droidnet.DroidListener;
 import com.droidnet.DroidNet;
 import com.dx.dxloadingbutton.lib.LoadingButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -61,7 +61,6 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks, DroidListener {
 
-
     ArrayList<String> countryNames = new ArrayList<>();
     ArrayList<String> countryFlags = new ArrayList<>();
     TinyDB tinyDB;
@@ -76,6 +75,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     ImageView background;
     TextView countryName;
     ConstraintLayout root;
+
+    FloatingActionButton fabLocation;
+
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -97,6 +99,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             setContentView(R.layout.activity_main);
 
         tinyDB = new TinyDB(this);
+
+        fabLocation = findViewById(R.id.fab_myLocation);
+        fabLocation.hide();
+        fabLocation.setOnClickListener(view -> {
+            setCountryBasedOnUserLocation();
+            fabLocation.hide();
+        });
 
         getDataFromFirebase();
 
@@ -138,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         int cy = (btnSubmit.getTop() + btnSubmit.getBottom()) / 2;
 
         Animator animator = ViewAnimationUtils.createCircularReveal(animateView,cx,cy,0,getResources().getDisplayMetrics().heightPixels * 1.2f);
-        animator.setDuration(2000);
+        animator.setDuration(2500);
         animator.setInterpolator(new AccelerateDecelerateInterpolator());
         animateView.setVisibility(View.VISIBLE);
         animator.start();
@@ -197,6 +206,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         builder.setMessage("Your GPS seems to be disabled, do you want to enable it?")
                 .setCancelable(false)
                 .setPositiveButton("Yes", (dialog, id) -> {
+                    fabLocation.show();
+
                     startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                 })
                 .setNegativeButton("No", (dialog, id) -> dialog.cancel());
@@ -296,7 +307,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                         CircularProgressDrawable circularProgressDrawable = new CircularProgressDrawable(getBaseContext());
                         circularProgressDrawable.setStrokeWidth(5f);
-                        circularProgressDrawable.setCenterRadius(90f);
+                        circularProgressDrawable.setCenterRadius(30f);
                         circularProgressDrawable.start();
 
                         Glide.with(getApplicationContext())
@@ -336,7 +347,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 });
 
         snackbar.setActionTextColor(Color.RED);
-        snackbar.setTextColor(Color.WHITE);
+        snackbar.setActionTextColor(Color.WHITE);
         snackbar.show();
     }
 
@@ -366,7 +377,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 finish();
             }
         };
-        handler.postDelayed(runnable, 2000);
+        handler.postDelayed(runnable, 2500);
     }
 
 

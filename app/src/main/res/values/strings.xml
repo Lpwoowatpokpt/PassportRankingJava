@@ -3,7 +3,7 @@
 
     <string name="googleMaps_api_key">AIzaSyBu4ITXxbdpqq2FuQkJnTjKXNyE6kx_lvw</string>
 
-    <string name="version">version 0.2</string>
+    <string name="version">version 0.1</string>
     <string name="select_your_country">choose your citizenship</string>
     <string name="change_your_country">change your citizenship</string>
     <string name="submit">start</string>

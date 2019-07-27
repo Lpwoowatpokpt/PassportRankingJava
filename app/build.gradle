@@ -30,6 +30,7 @@ dependencies {
 
     //android
     implementation 'com.google.android.material:material:1.1.0-alpha08'
+    implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
     implementation 'com.android.support:recyclerview-v7:29.0.0'
     implementation 'com.android.support:cardview-v7:29.0.0'
     implementation 'com.android.support:support-v4:29.0.0'
@@ -51,11 +52,12 @@ dependencies {
     implementation 'com.github.Mahfa:DayNightSwitch:1.2'
     implementation 'com.github.GrenderG:Toasty:1.4.2'
     implementation 'com.github.StevenDXC:DxLoadingButton:2.2'
+    implementation 'com.github.jorgecastilloprz:fabprogresscircle:1.01@aar'
 
     //excel
     implementation 'cn.zhouchaoyuan:excelpanel:1.0.5'
 
-    //check interner connection
+    //check internet connection
     implementation 'com.job:droidnet:2.0.0'
 
 

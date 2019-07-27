@@ -248,7 +248,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:src="@drawable/wikipedia"
-        app:backgroundTint="@android:color/white"
+        app:backgroundTint="@color/cell_border_color"
         app:layout_anchor="@id/header"
         app:rippleColor="@color/toolbar"
         android:clickable="true"

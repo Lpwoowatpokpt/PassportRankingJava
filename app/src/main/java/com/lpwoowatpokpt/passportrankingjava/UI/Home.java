@@ -1,7 +1,9 @@
 package com.lpwoowatpokpt.passportrankingjava.UI;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -71,7 +73,7 @@ public class Home extends AppCompatActivity
         ViewPump.init(ViewPump.builder()
                 .addInterceptor(new CalligraphyInterceptor(
                         new CalligraphyConfig.Builder()
-                                .setDefaultFontPath("fonts/Roboto-Medium.ttf")
+                                .setDefaultFontPath("fonts/Roboto-Bold.ttf")
                                 .setFontAttrId(R.attr.fontPath)
                                 .build())).build());
 
@@ -149,13 +151,13 @@ public class Home extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            showIconDialogue();
+            showToolsDialogue();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void showIconDialogue() {
+    private void showToolsDialogue() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 

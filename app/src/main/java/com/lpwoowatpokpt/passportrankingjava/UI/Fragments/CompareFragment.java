@@ -3,7 +3,6 @@ package com.lpwoowatpokpt.passportrankingjava.UI.Fragments;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,7 +39,7 @@ import in.galaxyofandroid.spinerdialog.SpinnerDialog;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class CompareFragment extends Fragment {
+public class CompareFragment extends Fragment{
 
     private Context context;
     private TinyDB tinyDB;
@@ -261,4 +260,6 @@ public class CompareFragment extends Fragment {
         }
         return cells;
     }
+
+
 }
