@@ -21,9 +21,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -50,18 +52,18 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
     private TinyDB tinyDB;
     private DatabaseReference topRanking, countries;
 
-    private RankingFragment(Context context) {
+    private RankingFragment(Context context, TinyDB tinyDB) {
         this.context = context;
-        tinyDB = new TinyDB(context);
+        this.tinyDB = tinyDB;
         countries = Common.getDatabase().getReference(Common.Countries);
         countries.keepSynced(true);
         topRanking = Common.getDatabase().getReference(Common.Top);
         setHasOptionsMenu(true);
     }
 
-    public static RankingFragment newInstance(Context context)
+    public static RankingFragment newInstance(Context context, TinyDB tinyDB)
     {
-        return new RankingFragment(context);
+        return new RankingFragment(context, tinyDB);
     }
 
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -99,8 +101,14 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
         name.setText(tinyDB.getString(Common.COUNTRY_NAME));
 
+        CircularProgressDrawable circularProgressDrawable = new CircularProgressDrawable(context);
+        circularProgressDrawable.setStrokeWidth(5f);
+        circularProgressDrawable.setCenterRadius(30f);
+        circularProgressDrawable.start();
+
         Glide.with(context)
                 .load(tinyDB.getString(Common.COVER))
+                .apply(RequestOptions.placeholderOf(circularProgressDrawable))
                 .into(cover);
 
         expandBtn = myFragment.findViewById(R.id.expand);
@@ -230,14 +238,14 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
         return countryList;
     }
 
-    private void updateTop(String countryName, String coverPath, int total, int visa_free, int visa_onArrival, int visa_requiered, int visa_eta) {
-        topRanking.child(countryName)
-                .setValue(new Ranking(countryName,coverPath,total,visa_free,visa_onArrival,visa_eta,visa_requiered));
-    }
-
     @Override
     public void onRefresh() {
         loadRecyclerViewData();
+    }
+
+    private void updateTop(String countryName, String coverPath, int total, int visa_free, int visa_onArrival, int visa_requiered, int visa_eta) {
+        topRanking.child(countryName)
+                .setValue(new Ranking(countryName,coverPath,total,visa_free,visa_onArrival,visa_eta,visa_requiered));
     }
 
     private void loadRecyclerViewData() {

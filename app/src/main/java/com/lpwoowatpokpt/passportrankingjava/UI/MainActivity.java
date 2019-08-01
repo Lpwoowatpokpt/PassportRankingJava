@@ -77,9 +77,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     TextView countryName;
     ConstraintLayout root;
 
-    FloatingActionButton fabLocation;
-
-
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(ViewPumpContextWrapper.wrap(newBase));
@@ -141,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         int cy = (btnSubmit.getTop() + btnSubmit.getBottom()) / 2;
 
         Animator animator = ViewAnimationUtils.createCircularReveal(animateView,cx,cy,0,getResources().getDisplayMetrics().heightPixels * 1.2f);
-        animator.setDuration(3000);
+        animator.setDuration(5000);
         animator.setInterpolator(new AccelerateDecelerateInterpolator());
         animateView.setVisibility(View.VISIBLE);
         animator.start();
@@ -200,7 +197,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         builder.setMessage("Your GPS seems to be disabled, do you want to enable it?")
                 .setCancelable(false)
                 .setPositiveButton("Yes", (dialog, id) -> {
-                    fabLocation.show();
                     startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                 })
                 .setNegativeButton("No", (dialog, id) -> dialog.cancel());

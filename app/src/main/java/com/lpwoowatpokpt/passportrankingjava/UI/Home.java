@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -32,15 +33,27 @@ import com.droidnet.DroidListener;
 import com.droidnet.DroidNet;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.lpwoowatpokpt.passportrankingjava.Common.Common;
 import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
 import com.lpwoowatpokpt.passportrankingjava.Common.Utils;
+import com.lpwoowatpokpt.passportrankingjava.Model.Country;
+import com.lpwoowatpokpt.passportrankingjava.Model.Ranking;
 import com.lpwoowatpokpt.passportrankingjava.R;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.CompareFragment;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.MapFragment;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.RankingFragment;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.TopFragment;
 import com.mahfa.dnswitch.DayNightSwitch;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
 
 import es.dmoral.toasty.Toasty;
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
@@ -79,6 +92,7 @@ public class Home extends AppCompatActivity
         setContentView(R.layout.activity_home);
 
 
+
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, Common.RequestCameraPermissionId);
@@ -105,6 +119,7 @@ public class Home extends AppCompatActivity
 
         setDefaultFragment();
     }
+
 
     @Override
     protected void onDestroy() {
@@ -159,18 +174,18 @@ public class Home extends AppCompatActivity
     }
 
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
         Fragment selectedFragment = null;
         int id = item.getItemId();
 
         switch (id){
             case R.id.nav_ranking:
-                selectedFragment = RankingFragment.newInstance(this);
+                selectedFragment = RankingFragment.newInstance(this, tinyDB);
                 toolbar.setTitle(getString(R.string.menu_ranking));
                 break;
             case R.id.nav_compare:
-                selectedFragment = CompareFragment.newInstance(this);
+                selectedFragment = CompareFragment.newInstance(this, tinyDB);
                 toolbar.setTitle(getString(R.string.menu_compare));
                 break;
             case R.id.nav_top:
@@ -178,7 +193,7 @@ public class Home extends AppCompatActivity
                 toolbar.setTitle(getString(R.string.menu_top));
                 break;
             case R.id.nav_map:
-                selectedFragment = MapFragment.newInstance(this);
+                selectedFragment = MapFragment.newInstance(this, tinyDB);
                 toolbar.setTitle(tinyDB.getString(Common.COUNTRY_NAME));
                 break;
 
@@ -197,7 +212,7 @@ public class Home extends AppCompatActivity
     void setDefaultFragment()
     {
        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.container, RankingFragment.newInstance(this));
+        transaction.replace(R.id.container, RankingFragment.newInstance(this, tinyDB));
         transaction.commit();
     }
 

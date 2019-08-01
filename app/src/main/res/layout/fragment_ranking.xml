@@ -9,12 +9,9 @@
     <RelativeLayout
         android:padding="8dp"
         android:id="@+id/region"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:ignore="UnusedAttribute">
+        tools:ignore="UnusedAttribute,UselessParent">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/header"
@@ -28,6 +25,7 @@
             app:cardElevation="4dp">
 
             <LinearLayout
+                android:divider="@drawable/empty_tall_divider"
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -44,7 +42,7 @@
                         android:layout_width="0dp"
                         android:contentDescription="@string/app_name"
                         android:layout_weight="1"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="48dp" />
 
                     <TextView
                         android:textSize="20sp"

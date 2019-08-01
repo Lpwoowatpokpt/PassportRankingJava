@@ -57,13 +57,13 @@ public class CompareFragment extends Fragment{
     private List<RowTitle> rowTitles;
     private List<List<Cell>> cells;
 
-    public static CompareFragment newInstance(Context context) {
-        return new CompareFragment(context);
+    public static CompareFragment newInstance(Context context, TinyDB tinyDB) {
+        return new CompareFragment(context, tinyDB);
     }
 
-    private CompareFragment(Context context) {
+    private CompareFragment(Context context, TinyDB tinyDB) {
         this.context = context;
-        tinyDB = new TinyDB(context);
+        this.tinyDB = tinyDB;
     }
 
     @Override

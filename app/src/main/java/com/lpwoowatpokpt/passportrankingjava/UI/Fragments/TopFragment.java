@@ -11,8 +11,10 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.DatabaseReference;
@@ -52,7 +54,7 @@ public class TopFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         View myFragment = inflater.inflate(R.layout.fragment_top, container, false);
@@ -82,7 +84,16 @@ public class TopFragment extends Fragment {
             protected void onBindViewHolder(@NonNull final RankingViewHolder rankingViewHolder, final int position, @NonNull Ranking ranking) {
                 rankingViewHolder.countryPositionTxt.setText(String.valueOf(ranking.getTotalScore()));
                 rankingViewHolder.countryNameTxt.setText(ranking.getName());
-                Glide.with(context).load(ranking.getCover()).into(rankingViewHolder.coverImg);
+
+                CircularProgressDrawable circularProgressDrawable = new CircularProgressDrawable(context);
+                circularProgressDrawable.setStrokeWidth(5f);
+                circularProgressDrawable.setCenterRadius(30f);
+                circularProgressDrawable.start();
+
+                Glide.with(context)
+                        .load(ranking.getCover())
+                        .apply(RequestOptions.placeholderOf(circularProgressDrawable))
+                        .into(rankingViewHolder.coverImg);
 
                 rankingViewHolder.countryProgress.setProgress(ranking.getVisaOnArrival());
                 rankingViewHolder.countryProgress.setSecondaryProgress(ranking.getTotalScore());

@@ -22,8 +22,6 @@
 
     <string name="search">searching by country</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="menu_ranking">Ranking</string>
     <string name="menu_top">Top</string>
     <string name="menu_map">Map</string>
@@ -35,17 +33,15 @@
     <string name="visa_free">visa-free</string>
     <string name="visa_required">visa required</string>
     <string name="on_arrival">visa on arrival</string>
-    <string name="eTA">eTA</string>
+    <string name="eTA">eVisa</string>
 
     <string name="latitude">latitude</string>
     <string name="longitude">longitude</string>
 
     <string name="change_region">Do you want to change your citizenship ?</string>
 
-    <string name="about_app">Total score means sum of "visa free"\n
-       "eTa" and "visa on arrival" countries.\n
-        eTa - means Electronic Travel Authorization.</string>
-    <string name="api_url">This application uses<a href="https://github.com/ilyankou/passport-index-dataset"> passport index dataset</a></string>
+    <string name="about_app">This application is open source and provided as is. If you find any inaccuracies in database, please contact us</string>
+
     <string name="day_mode_is_on">day mode is on</string>
     <string name="location_rationale">Share your location to determine your citizenship</string>
     <string name="proceed_offline">proceed offline</string>

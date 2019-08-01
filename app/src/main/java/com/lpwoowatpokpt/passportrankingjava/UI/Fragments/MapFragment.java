@@ -44,21 +44,23 @@ import es.dmoral.toasty.Toasty;
 public class MapFragment extends Fragment {
 
     private Context context;
+    private TinyDB tinyDB;
 
-    public static MapFragment newInstance(Context context)
+    public static MapFragment newInstance(Context context, TinyDB tinyDB)
     {
-        return new MapFragment(context);
+        return new MapFragment(context, tinyDB);
     }
 
-    private TinyDB tinyDB;
+    private MapFragment(Context context, TinyDB tinyDB) {
+        this.context = context;
+        this.tinyDB = tinyDB;
+    }
+
     private MapView mMapView;
     private GoogleMap googleMap;
     private ClusterManager<MarkerItem>clusterManager;
 
-    private MapFragment(Context context) {
-        this.context = context;
-        tinyDB = new TinyDB(context);
-    }
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,

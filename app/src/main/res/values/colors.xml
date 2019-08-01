@@ -10,10 +10,10 @@
     <color name="toolbar">#00796b</color>
     <color name="progressBarColor">#ad1457</color>
 
-    <color name="visa_free">#4CAF50</color>
-    <color name="visa_required">#E91E63</color>
-    <color name="visa_on_arrival">#03A9F4</color>
-    <color name="eTa">#FF5722</color>
+    <color name="visa_free">#25752E</color>
+    <color name="visa_required">#8A141A</color>
+    <color name="visa_on_arrival">#274E9B</color>
+    <color name="eTa">#9A7D0A</color>
 
     <color name="alertDialogueDark">#12121F</color>
 
