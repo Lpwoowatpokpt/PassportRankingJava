@@ -71,17 +71,6 @@
         app:lb_btnRippleColor="@color/colorAccent"/>
 
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_myLocation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginBottom="@dimen/fab_margin"
-        app:backgroundTint="@color/cell_border_color"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/ic_my_location_white_24dp" />
-
     <View
         android:id="@+id/animate_view"
         android:layout_width="match_parent"

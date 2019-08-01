@@ -14,7 +14,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.koushikdutta.ion.builder.Builders;
 import com.lpwoowatpokpt.passportrankingjava.ExcelModel.Cell;
 import com.lpwoowatpokpt.passportrankingjava.ExcelModel.ColTitle;
 import com.lpwoowatpokpt.passportrankingjava.ExcelModel.RowTitle;
@@ -52,7 +51,7 @@ public class CompareAdapter extends BaseExcelPanelAdapter<RowTitle, ColTitle, Ce
                 break;
             case 0:
                viewHolder.countryStatusTxt.setText(R.string.visa_required);
-               viewHolder.backgroundColor.setBackgroundColor(ContextCompat.getColor(context, R.color.visa_requiered));
+               viewHolder.backgroundColor.setBackgroundColor(ContextCompat.getColor(context, R.color.visa_required));
             break;
 
             case 1:

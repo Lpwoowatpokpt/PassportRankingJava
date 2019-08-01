@@ -20,10 +20,6 @@
             android:id="@+id/nav_map"
             android:icon="@drawable/google"
             android:title="@string/menu_map" />
-        <item
-            android:id="@+id/nav_info"
-            android:icon="@drawable/info"
-            android:title="@string/menu_info" />
     </group>
 
 

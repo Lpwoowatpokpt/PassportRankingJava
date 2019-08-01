@@ -56,5 +56,6 @@
     <string name="country_long_blank">United Arab Emirates</string>
     <string name="select_to_compare">choose citizenship to compare</string>
     <string name="country_exists">already present…</string>
+    <string name="tutorial">Youtube tutorials</string>
 
 </resources>

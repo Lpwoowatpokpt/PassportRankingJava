@@ -35,7 +35,7 @@ public class PassportAdapter extends RecyclerView.Adapter<PassportAdapter.ViewHo
 implements Filterable {
 
      private Context context;
-     TinyDB tinyDB;
+     private TinyDB tinyDB;
      ArrayList<Country> mCountryList;
      private ArrayList<Country>mFilteredList;
      private CustomFilter filter;
@@ -65,7 +65,7 @@ implements Filterable {
         if (viewHolder.countryStatus.getText().toString().matches("0")){
             viewHolder.countryStatus.setText(R.string.visa_required);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                viewHolder.countryStatus.setTextColor(context.getColor(R.color.visa_requiered));
+                viewHolder.countryStatus.setTextColor(context.getColor(R.color.visa_required));
             }
         }
         else if (viewHolder.countryStatus.getText().toString().matches("1")){

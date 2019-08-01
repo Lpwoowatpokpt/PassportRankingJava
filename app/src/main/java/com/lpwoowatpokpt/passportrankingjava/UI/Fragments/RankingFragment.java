@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
@@ -34,7 +33,6 @@ import com.lpwoowatpokpt.passportrankingjava.Adapter.PassportAdapter;
 import com.lpwoowatpokpt.passportrankingjava.Common.Common;
 import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
 import com.lpwoowatpokpt.passportrankingjava.Model.Country;
-import com.lpwoowatpokpt.passportrankingjava.Model.CountryModel;
 import com.lpwoowatpokpt.passportrankingjava.Model.Ranking;
 import com.lpwoowatpokpt.passportrankingjava.R;
 
@@ -44,7 +42,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import es.dmoral.toasty.Toasty;
-import in.galaxyofandroid.spinerdialog.SpinnerDialog;
 
 
 public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
@@ -71,10 +68,11 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
     private RecyclerView recyclerView;
     private PassportAdapter passportAdapter;
 
-    private SpinnerDialog spinnerDialog;
-
-    private TextView name, txtTotalScore, txtVisaFree, tatVisaOnArrival, txtEta, tatVisaRequired;
-    private ImageView cover;
+    private TextView txtTotalScore;
+    private TextView txtVisaFree;
+    private TextView tatVisaOnArrival;
+    private TextView txtEta;
+    private TextView tatVisaRequired;
 
     private ImageView expandBtn;
     private LinearLayout ranking;
@@ -89,8 +87,8 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
                              Bundle savedInstanceState) {
         View myFragment = inflater.inflate(R.layout.fragment_ranking, container, false);
 
-        name = myFragment.findViewById(R.id.name);
-        cover = myFragment.findViewById(R.id.passportCover);
+        TextView name = myFragment.findViewById(R.id.name);
+        ImageView cover = myFragment.findViewById(R.id.passportCover);
         cover.setOnClickListener(view -> scaleCoverImage(tinyDB.getString(Common.COVER)));
 
         txtTotalScore = myFragment.findViewById(R.id.total);
@@ -116,7 +114,8 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
             expandBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_arrow_drop_down_black_24dp));
         }
 
-        expandBtn.setOnClickListener(v -> {
+        CardView header = myFragment.findViewById(R.id.header);
+        header.setOnClickListener(v -> {
             if (tinyDB.getBoolean(Common.IS_EXPAND,true)){
                 ranking.setVisibility(View.GONE);
                 expandBtn.setImageDrawable(getResources().getDrawable(R.drawable.ic_arrow_drop_down_black_24dp));
@@ -129,14 +128,6 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
         });
 
-        CardView header = myFragment.findViewById(R.id.header);
-        header.setOnClickListener(v -> {
-            if (Common.isConnectedToInternet(context))
-                showDialog();
-            else {
-                Toasty.warning(context, getString(R.string.no_internet), Toast.LENGTH_SHORT, true).show();
-            }
-        });
 
         recyclerView = myFragment.findViewById(R.id.recycler);
         recyclerView.setHasFixedSize(true);
@@ -170,7 +161,7 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.menu_search, menu);
         MenuItem mSearch = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView)mSearch.getActionView();
@@ -185,53 +176,6 @@ public class RankingFragment extends Fragment implements SwipeRefreshLayout.OnRe
                 passportAdapter.getFilter().filter(s);
                 return false;
             }
-        });
-    }
-
-    private void showDialog() {
-        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
-
-        LayoutInflater inflater = this.getLayoutInflater();
-        View update_dialog = inflater.inflate(R.layout.change_region_dialog, null);
-
-        alertDialog.setView(update_dialog);
-        alertDialog.setNegativeButton("NO", (dialogInterface, i) -> dialogInterface.dismiss());
-
-        alertDialog.setPositiveButton("YES", (dialogInterface, i) -> {
-            dialogInterface.dismiss();
-            showSpinner();
-            spinnerDialog.showSpinerDialog();
-        });
-        alertDialog.show();
-    }
-
-    private void showSpinner() {
-        spinnerDialog=new SpinnerDialog(getActivity(), tinyDB.getListString(Common.COUNTRY_LIST), getString(R.string.select_your_country), R.style.DialogAnimations_SmileWindow,"Close");
-
-        spinnerDialog.setCancellable(true);
-        spinnerDialog.setShowKeyboard(false);
-
-        spinnerDialog.setTitleColor(getResources().getColor(R.color.colorAccent));
-        spinnerDialog.setTitleColor(getResources().getColor(R.color.colorPrimaryText));
-        spinnerDialog.setCloseColor(getResources().getColor(R.color.visa_requiered));
-
-        spinnerDialog.bindOnSpinerListener((s, pos) -> {
-
-            String countryName = Common.countryModel.get(pos).getName();
-
-            name.setText(countryName);
-
-            Glide.with(context)
-                    .load(Common.countryModel.get(pos).getCover())
-                    .into(cover);
-
-            tinyDB.putString(Common.COUNTRY_NAME, countryName);
-            tinyDB.putString(Common.COVER, Common.countryModel.get(pos).getCover());
-
-            tinyDB.putDouble(Common.LATITUDE, Common.countryModel.get(pos).getLatitude());
-            tinyDB.putDouble(Common.LONGITUDE, Common.countryModel.get(pos).getLongitude());
-
-            onRefresh();
         });
     }
 

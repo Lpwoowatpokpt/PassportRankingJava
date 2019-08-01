@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/tools"
+    xmlns:app1="http://schemas.android.com/apk/res-auto"
     android:layout_margin="8dp"
+    app1:cardBackgroundColor="@color/highlight_light"
+    app1:cardCornerRadius="8dp"
+    android:elevation="8dp"
     app:ignore="NamespaceTypo">
 
     <LinearLayout
@@ -21,6 +24,7 @@
             android:contentDescription="@string/app_name" />
 
         <TextView
+            android:textColor="@android:color/white"
             android:text="@string/app_name"
             android:gravity="center"
             android:layout_margin="8dp"
@@ -32,6 +36,7 @@
             android:layout_height="wrap_content"/>
 
         <TextView
+            android:textColor="@android:color/white"
             android:layout_marginTop="4dp"
             android:id="@+id/version"
             android:text="@string/version"
@@ -41,7 +46,11 @@
             android:layout_height="wrap_content" />
 
         <ProgressBar
-           android:layout_gravity="center"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:indeterminate="true"
+            android:indeterminateTintMode="src_atop"
+            android:indeterminateTint="@color/colorPrimary"
+            android:layout_gravity="center"
             android:layout_margin="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />

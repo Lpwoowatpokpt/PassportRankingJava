@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#FFFFFF</color>
     <color name="colorPrimaryDark">#000000</color>
-    <color name="colorAccent">#8BC34A</color>
+    <color name="colorAccent">#0277BD</color>
 
 
     <color name="colorPrimaryText">#050505</color>
@@ -11,13 +11,13 @@
     <color name="progressBarColor">#ad1457</color>
 
     <color name="visa_free">#4CAF50</color>
-    <color name="visa_requiered">#E91E63</color>
+    <color name="visa_required">#E91E63</color>
     <color name="visa_on_arrival">#03A9F4</color>
     <color name="eTa">#FF5722</color>
 
     <color name="alertDialogueDark">#12121F</color>
 
-<color name="higlight_ligth">#1976D2</color>
+<color name="highlight_light">#2196F3</color>
     <color name="cell_border_color">#303F9F</color>
 
 

@@ -12,7 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -43,7 +44,7 @@ public class CompareFragment extends Fragment{
 
     private Context context;
     private TinyDB tinyDB;
-    private FloatingActionButton fab;
+    private FloatingActionMenu floatingActionMenu;
 
     private final static int PAGE_SIZE = 1;
     private final static int ROW_SIZE = Common.countryModel.size();
@@ -78,15 +79,27 @@ public class CompareFragment extends Fragment{
 
         initData();
 
-        fab = myFragment.findViewById(R.id.fabAdd);
-        fab.setOnClickListener(view -> {
+        floatingActionMenu = myFragment.findViewById(R.id.fabMenu);
+
+
+
+        FloatingActionButton fabAdd = myFragment.findViewById(R.id.fabAdd);
+        fabAdd.setOnClickListener(view -> {
             showSpinner();
             spinnerDialog.showSpinerDialog();
         });
 
+        FloatingActionButton fabDelete = myFragment.findViewById(R.id.fabDelete);
+        fabDelete.setOnClickListener(view -> clearList());
+
         return myFragment;
     }
 
+    private void clearList() {
+        rowTitles.clear();
+        cells.clear();
+        compareAdapter.setAllData(genColTitles(), null, null);
+    }
 
     private void initData() {
         progress.setVisibility(View.GONE);
@@ -95,21 +108,20 @@ public class CompareFragment extends Fragment{
         compareAdapter.setAllData(genColTitles(), rowTitles,  cells);
     }
 
-
     private ExcelPanel.OnScrollListener onScrollListener = new ExcelPanel.OnScrollListener() {
         @Override
         public void onScrolled(ExcelPanel excelPanel, int dx, int dy) {
             super.onScrolled(excelPanel, dx, dy);
             if (dy > 0)
-                fab.hide();
+                floatingActionMenu.hideMenu(true);
             else if (dy < 0)
-                fab.show();
+                floatingActionMenu.showMenu(true);
 
 
             if (dx > 0)
-                fab.hide();
+                floatingActionMenu.hideMenu(true);
             else if (dx < 0)
-                fab.show();
+                floatingActionMenu.showMenu(true);
 
 
         }
@@ -126,7 +138,7 @@ public class CompareFragment extends Fragment{
 
         spinnerDialog.setTitleColor(getResources().getColor(R.color.colorAccent));
         spinnerDialog.setTitleColor(getResources().getColor(R.color.colorPrimaryText));
-        spinnerDialog.setCloseColor(getResources().getColor(R.color.visa_requiered));
+        spinnerDialog.setCloseColor(getResources().getColor(R.color.visa_required));
 
         spinnerDialog.bindOnSpinerListener((s, pos) -> {
 

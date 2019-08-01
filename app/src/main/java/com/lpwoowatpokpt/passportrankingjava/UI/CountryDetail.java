@@ -77,7 +77,7 @@ public class CountryDetail extends AppCompatActivity {
         ViewPump.init(ViewPump.builder()
                 .addInterceptor(new CalligraphyInterceptor(
                         new CalligraphyConfig.Builder()
-                                .setDefaultFontPath("fonts/Roboto-Bold.ttf")
+                                .setDefaultFontPath("fonts/NanumGothic-Bold.ttf")
                                 .setFontAttrId(R.attr.fontPath)
                                 .build())).build());
 

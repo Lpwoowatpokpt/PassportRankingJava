@@ -2,6 +2,7 @@ package com.lpwoowatpokpt.passportrankingjava.UI;
 
 import android.Manifest;
 import android.animation.Animator;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -92,20 +93,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         ViewPump.init(ViewPump.builder()
                 .addInterceptor(new CalligraphyInterceptor(
                         new CalligraphyConfig.Builder()
-                                .setDefaultFontPath("fonts/TravelingTypewriter.ttf")
+                                .setDefaultFontPath("fonts/NanumGothic-Bold.ttf")
                                 .setFontAttrId(R.attr.fontPath)
                                 .build())).build());
 
             setContentView(R.layout.activity_main);
 
         tinyDB = new TinyDB(this);
-
-        fabLocation = findViewById(R.id.fab_myLocation);
-        fabLocation.hide();
-        fabLocation.setOnClickListener(view -> {
-            setCountryBasedOnUserLocation();
-            fabLocation.hide();
-        });
 
         getDataFromFirebase();
 
@@ -130,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     toNextPage();
                     return Unit.INSTANCE;
                 });
-            },500);
+            },1000);
         });
         root = findViewById(R.id.root);
         passportCover = findViewById(R.id.passportCover);
@@ -147,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         int cy = (btnSubmit.getTop() + btnSubmit.getBottom()) / 2;
 
         Animator animator = ViewAnimationUtils.createCircularReveal(animateView,cx,cy,0,getResources().getDisplayMetrics().heightPixels * 1.2f);
-        animator.setDuration(2500);
+        animator.setDuration(3000);
         animator.setInterpolator(new AccelerateDecelerateInterpolator());
         animateView.setVisibility(View.VISIBLE);
         animator.start();
@@ -207,7 +201,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 .setCancelable(false)
                 .setPositiveButton("Yes", (dialog, id) -> {
                     fabLocation.show();
-
                     startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                 })
                 .setNegativeButton("No", (dialog, id) -> dialog.cancel());
@@ -248,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                     CircularProgressDrawable circularProgressDrawable = new CircularProgressDrawable(getBaseContext());
                     circularProgressDrawable.setStrokeWidth(5f);
-                    circularProgressDrawable.setCenterRadius(90f);
+                    circularProgressDrawable.setCenterRadius(30f);
                     circularProgressDrawable.start();
 
                     assert model != null;
@@ -301,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     spinnerDialog.setShowKeyboard(false);
 
                     spinnerDialog.setTitleColor(getResources().getColor(R.color.colorPrimaryText));
-                    spinnerDialog.setCloseColor(getResources().getColor(R.color.visa_requiered));
+                    spinnerDialog.setCloseColor(getResources().getColor(R.color.visa_required));
 
                     spinnerDialog.bindOnSpinerListener((s, pos) -> {
 
@@ -359,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 
         LayoutInflater inflater = this.getLayoutInflater();
-        View update_dialog = inflater.inflate(R.layout.splash, null);
+        @SuppressLint("InflateParams") View update_dialog = inflater.inflate(R.layout.splash, null);
 
         final AlertDialog alert = alertDialog.create();
         alert.setView(update_dialog);
@@ -377,9 +370,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 finish();
             }
         };
-        handler.postDelayed(runnable, 2500);
+        handler.postDelayed(runnable, 3000);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (tinyDB.getString(Common.COUNTRY_NAME).isEmpty())
+        askForLocationPermission();
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

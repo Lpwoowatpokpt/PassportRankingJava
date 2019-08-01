@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -25,9 +26,11 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.clustering.ClusterManager;
 import com.lpwoowatpokpt.passportrankingjava.Common.Common;
 import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
+import com.lpwoowatpokpt.passportrankingjava.Maps.ClusterRenderer;
+import com.lpwoowatpokpt.passportrankingjava.Maps.MarkerItem;
 import com.lpwoowatpokpt.passportrankingjava.R;
 import com.lpwoowatpokpt.passportrankingjava.UI.CountryDetail;
 
@@ -50,6 +53,7 @@ public class MapFragment extends Fragment {
     private TinyDB tinyDB;
     private MapView mMapView;
     private GoogleMap googleMap;
+    private ClusterManager<MarkerItem>clusterManager;
 
     private MapFragment(Context context) {
         this.context = context;
@@ -57,7 +61,7 @@ public class MapFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View myFragment = inflater.inflate(R.layout.fragment_map, container, false);
 
@@ -107,11 +111,23 @@ public class MapFragment extends Fragment {
             LatLng current = new LatLng(lat,longitude);
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(current,6f));
 
+            clusterManager = new ClusterManager<>(context, googleMap);
+            new ClusterRenderer(context, googleMap, clusterManager);
+
+            googleMap.setOnCameraIdleListener(clusterManager);
+
             for (int i=0; i < Common.countryModel.size(); i++){
-                createMarker(Common.countryModel.get(i).getLatitude(),
-                        Common.countryModel.get(i).getLongitude(),
-                        Common.countryModel.get(i).getName(),
-                        tinyDB.getListLong(Common.STATUS).get(i));
+
+                Double _lat = Common.countryModel.get(i).getLatitude();
+                Double _lon = Common.countryModel.get(i).getLongitude();
+                LatLng markerPos = new LatLng(_lat, _lon);
+                String title = Common.countryModel.get(i).getName();
+
+                String snippet = getStatus(tinyDB.getListLong(Common.STATUS).get(i));
+                BitmapDescriptor icon = getIcon(tinyDB.getListLong(Common.STATUS).get(i));
+
+                clusterManager.addItem(new MarkerItem(markerPos, title, snippet, icon));
+                clusterManager.cluster();
             }
 
             googleMap.setOnInfoWindowClickListener(marker -> {
@@ -124,59 +140,60 @@ public class MapFragment extends Fragment {
         return myFragment;
     }
 
-    private void createMarker(Double latitude, Double longitude, String name, Long status){
-        String _status = "";
+    private BitmapDescriptor getIcon(Long status) {
         BitmapDescriptor icon;
 
         if (status==0){
-            _status = getString(R.string.visa_required);
             icon = bitmapDescriptorFromVector(context, R.drawable.ic_vpn_lock_red_24dp);
         }
         else if (status == 1){
-            _status = getString(R.string.on_arrival);
             icon = bitmapDescriptorFromVector(context, R.drawable.ic_flight_land_blue_24dp);
         }
         else if (status==2){
-            _status = getString(R.string.eTA);
             if (tinyDB.getInt(Common.THEME_ID)==1)
-            icon = bitmapDescriptorFromVector(context, R.drawable.ic_important_devices_yellow_24dp);
+                icon = bitmapDescriptorFromVector(context, R.drawable.ic_important_devices_yellow_24dp);
             else
                 icon = bitmapDescriptorFromVector(context, R.drawable.ic_important_devices_orange_24dp);
         }
         else if (status==3){
-            _status = getString(R.string.visa_free);
             icon = bitmapDescriptorFromVector(context, R.drawable.ic_flight_green_24dp);
         }
         else {
             if (tinyDB.getInt(Common.THEME_ID)==1)
-            icon = bitmapDescriptorFromVector(context, R.drawable.ic_home_white_24dp);
+                icon = bitmapDescriptorFromVector(context, R.drawable.ic_home_white_24dp);
             else
                 icon = bitmapDescriptorFromVector(context, R.drawable.ic_home_black_24dp);
         }
 
-
-        googleMap.addMarker(new MarkerOptions()
-                .position(new LatLng(latitude, longitude))
-                .anchor(.1f, .1f)
-                .title(name)
-                .snippet(_status)
-                .icon(icon));
-
-
+        return icon;
     }
 
+    private String getStatus(Long statusLong) {
+        String status;
 
+        if (statusLong==0)
+            status = getString(R.string.visa_required);
+        else if (statusLong == 1)
+            status = getString(R.string.on_arrival);
+        else if (statusLong==2)
+            status = getString(R.string.eTA);
+        else if (statusLong==3)
+            status = getString(R.string.visa_free);
+        else
+            status ="";
+
+        return status;
+    }
 
     private BitmapDescriptor bitmapDescriptorFromVector(Context context, int vectorResId) {
         Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
+        assert vectorDrawable != null;
         vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
-
-
 
     @Override
     public void onResume() {

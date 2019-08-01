@@ -1,9 +1,8 @@
 package com.lpwoowatpokpt.passportrankingjava.UI;
 
 import android.Manifest;
-import android.app.Activity;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,6 +18,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -37,7 +37,6 @@ import com.lpwoowatpokpt.passportrankingjava.Common.TinyDB;
 import com.lpwoowatpokpt.passportrankingjava.Common.Utils;
 import com.lpwoowatpokpt.passportrankingjava.R;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.CompareFragment;
-import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.InfoFragment;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.MapFragment;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.RankingFragment;
 import com.lpwoowatpokpt.passportrankingjava.UI.Fragments.TopFragment;
@@ -58,8 +57,6 @@ public class Home extends AppCompatActivity
     private DroidNet mDroidNet;
     private WifiManager wifiManager;
 
-    TextView day_nightTxt;
-    DayNightSwitch dayNightSwitch;
     FrameLayout root;
 
     @Override
@@ -73,7 +70,7 @@ public class Home extends AppCompatActivity
         ViewPump.init(ViewPump.builder()
                 .addInterceptor(new CalligraphyInterceptor(
                         new CalligraphyConfig.Builder()
-                                .setDefaultFontPath("fonts/Roboto-Bold.ttf")
+                                .setDefaultFontPath("fonts/NanumGothic-Bold.ttf")
                                 .setFontAttrId(R.attr.fontPath)
                                 .build())).build());
 
@@ -147,60 +144,18 @@ public class Home extends AppCompatActivity
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            showToolsDialogue();
+            Intent intent = new Intent(Home.this, SettingsActivity.class);
+            startActivity(intent);
             return true;
+        }else if(id == R.id.action_info){
+            Intent intent = new Intent(Home.this, InfoActivity.class);
+            startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void showToolsDialogue() {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        final View settingsLayout = getLayoutInflater().inflate(R.layout.settings_layout, null);
-        builder.setView(settingsLayout);
-
-        day_nightTxt = settingsLayout.findViewById(R.id.day_night_switchTxt);
-        dayNightSwitch = settingsLayout.findViewById(R.id.day_night_switch);
-        dayNightSwitch.setDuration(300);
-
-        if (tinyDB.getBoolean(Common.IS_DARK_MODE, true)){
-            darkModeOn();
-            dayNightSwitch.setIsNight(true);
-        } else
-            darkModeOff();
-
-        dayNightSwitch.setListener(isNight -> {
-            if (!isNight){
-                Toasty.info(getBaseContext(), getString(R.string.dark_mode_off), Toast.LENGTH_SHORT, true).show();
-                darkModeOff();
-            }else {
-                Toasty.info(getBaseContext(), getString(R.string.dark_mode_on), Toast.LENGTH_SHORT, true).show();
-                darkModeOn();
-            }
-
-            Utils.ChangeToTheme(this);
-        });
-
-        builder.setNegativeButton(getString(R.string.close), (dialogInterface, i) -> dialogInterface.dismiss());
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
-    private void darkModeOff() {
-        day_nightTxt.setText(getString(R.string.dark_mode_off));
-        tinyDB.putBoolean(Common.IS_DARK_MODE, false);
-        tinyDB.putInt(Common.THEME_ID,0);
-    }
-
-    private void darkModeOn() {
-        day_nightTxt.setText(getString(R.string.dark_mode_on));
-        tinyDB.putBoolean(Common.IS_DARK_MODE, true);
-        tinyDB.putInt(Common.THEME_ID,1);
     }
 
     @Override
@@ -226,10 +181,7 @@ public class Home extends AppCompatActivity
                 selectedFragment = MapFragment.newInstance(this);
                 toolbar.setTitle(tinyDB.getString(Common.COUNTRY_NAME));
                 break;
-            case R.id.nav_info:
-                selectedFragment = InfoFragment.newInstance();
-                toolbar.setTitle(getString(R.string.menu_info));
-                break;
+
         }
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
